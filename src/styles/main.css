@@ -1,0 +1,19 @@
+body {
+	display: flex;
+	gap: 1em;
+	font-family: monospace;
+	flex: 50%;
+}
+video {
+	width: 300px;
+	height: 100%;
+	background-color: rgb(41, 41, 41);
+}
+@media (max-width: 800px) {
+	body {
+		flex-direction: column;
+	}
+	video {
+		width: 100%;
+	}
+}
