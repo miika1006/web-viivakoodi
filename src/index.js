@@ -18,7 +18,7 @@ const start = async () => {
 
 			video.addEventListener("play", () => {
 				log("Video started playing, starting to detect barcode");
-				detectOnRender(video);
+				window.setTimeout(() => detectOnRender(video), 1000);
 			});
 			video.addEventListener("pause", () => {
 				log("Video paused playing, stopping barcode detection");
