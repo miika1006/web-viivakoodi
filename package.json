@@ -3,7 +3,7 @@
 	"version": "1.0.0",
 	"description": "Viivakoodiluenta web-sovelluksella.",
 	"main": "index.js",
-	"author": "Miika Mehtälä",
+	"author": "Miika",
 	"license": "MIT",
 	"private": true,
 	"devDependencies": {
