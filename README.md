@@ -19,4 +19,4 @@ To build
 ```bash
 yarn build
 ```
-It will generate index.js to dist -folder.
+It will generate bundle.js to dist -folder.
