@@ -40,7 +40,7 @@ var i18n = {
 		footerText:     "Avoin lähdekoodi \u00b7 MIT \u00b7",
 		footerLink:     "BarcodeDetector MDN-dokumentaatio",
 		installTitle:   "Lisää kotinäytölle",
-		installDesc:    "Tämä sovellus toimii myös offline-tilassa. Lisää se kotinäytölle saadaksesi sovelluksen kaltaisen käyttökokemuksen.",
+		installDesc:    "Lisää kotinäytölle saadaksesi sovelluksen kaltaisen käyttökokemuksen.",
 		installBtn:     "Lisää kotinäytölle",
 	},
 	en: {
@@ -77,7 +77,7 @@ var i18n = {
 		footerText:     "Open source \u00b7 MIT \u00b7",
 		footerLink:     "BarcodeDetector MDN docs",
 		installTitle:   "Add to Home Screen",
-		installDesc:    "This app works offline too. Add it to your home screen for an app-like experience.",
+		installDesc:    "Add it to your home screen for an app-like experience.",
 		installBtn:     "Add to Home Screen",
 	}
 };
