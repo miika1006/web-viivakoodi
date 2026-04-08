@@ -17,6 +17,8 @@ yarn dev      # webpack-dev-server → http://localhost:8080 (live reload)
 yarn build    # production bundle → dist/bundle.js
 ```
 
+Requires **Node.js 24+** (see `.nvmrc`). With nvm: `nvm use`.
+
 ## Architecture
 
 ```
@@ -39,7 +41,7 @@ Webpack bundles `src/index.js` → `dist/bundle.js`.
   Arrow functions, `const`, template literals are fine (Babel transpiles them),
   but avoid ES2015+ APIs that have no polyfill (e.g. optional chaining `?.` is
   only safe if `@babel/plugin-proposal-optional-chaining` is configured).
-- Node.js v22+ with webpack 5.106+ no longer requires `--openssl-legacy-provider`.
+- Node.js 24+ is required (see `.nvmrc`). No `--openssl-legacy-provider` needed.
 - Detection sound uses `AudioContext`. The browser's autoplay policy requires a user
   interaction before sound plays — this is naturally satisfied since the user must
   click "Start Camera" before detection can happen.

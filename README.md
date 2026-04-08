@@ -47,6 +47,8 @@ QR Code · EAN-13 · EAN-8 · Code 128 · Code 39 · Code 93 · Codabar · ITF �
 
 ### Kehitys
 
+Vaatii **Node.js 24+** (katso `.nvmrc`). nvm:llä: `nvm use`.
+
 ```bash
 yarn install     # asenna riippuvuudet
 yarn dev         # kehityspalvelin → http://localhost:8080
@@ -109,6 +111,8 @@ The `BarcodeDetector` API is part of the [Fugu project](https://developer.chrome
 - **Safari/WebKit:** Not implemented. A [WebKit bug](https://bugs.webkit.org/show_bug.cgi?id=206328) is open. All browsers on iOS use WebKit, so iOS support is blocked until Apple implements it.
 
 ### Development
+
+Requires **Node.js 24+** (see `.nvmrc`). With nvm: `nvm use`.
 
 ```bash
 yarn install     # install dependencies
