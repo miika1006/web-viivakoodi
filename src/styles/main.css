@@ -165,7 +165,28 @@ main {
 }
 
 .video-wrapper.detected {
-	box-shadow: 0 0 0 3px var(--success), 0 0 48px rgba(74, 222, 128, 0.25);
+	animation: detectedFlash 0.65s ease-out forwards;
+}
+
+@keyframes detectedFlash {
+	0%   {
+		box-shadow:
+			0 0 0 4px var(--success),
+			0 0 0 8px rgba(74, 222, 128, 0.4),
+			inset 0 0 40px rgba(74, 222, 128, 0.18);
+	}
+	30%  {
+		box-shadow:
+			0 0 0 6px var(--success),
+			0 0 0 16px rgba(74, 222, 128, 0.25),
+			inset 0 0 60px rgba(74, 222, 128, 0.28);
+	}
+	100% {
+		box-shadow:
+			0 0 0 2px rgba(74, 222, 128, 0.2),
+			0 0 0 4px transparent,
+			inset 0 0 0px transparent;
+	}
 }
 
 #barcodecamera {
@@ -556,6 +577,163 @@ main {
 
 @keyframes progressShrink {
 	to { transform: scaleX(0); }
+}
+
+/* ============================================================
+   Browser compatibility section
+   ============================================================ */
+.compat-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+	gap: 1rem;
+	margin-bottom: 1.5rem;
+}
+
+.compat-card {
+	padding: 1.25rem;
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.compat-card__browser {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	font-weight: 700;
+	font-size: 0.95rem;
+}
+
+.browser-icon {
+	width: 22px;
+	height: 22px;
+	flex-shrink: 0;
+	color: var(--text-2);
+}
+
+.compat-card p {
+	font-size: 0.78rem;
+	color: var(--text-3);
+	line-height: 1.4;
+}
+
+.compat-badge {
+	display: inline-block;
+	font-size: 0.7rem;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	padding: 0.25em 0.7em;
+	border-radius: 999px;
+	align-self: flex-start;
+}
+
+.compat-badge--yes {
+	background: rgba(74, 222, 128, 0.12);
+	color: var(--success);
+	border: 1px solid rgba(74, 222, 128, 0.25);
+}
+
+.compat-badge--no {
+	background: rgba(248, 113, 113, 0.1);
+	color: #f87171;
+	border: 1px solid rgba(248, 113, 113, 0.2);
+}
+
+.compat-card--yes {
+	border-color: rgba(74, 222, 128, 0.12);
+}
+
+.compat-card--no {
+	border-color: rgba(248, 113, 113, 0.08);
+	opacity: 0.8;
+}
+
+/* Device/browser table */
+.device-table-wrap {
+	padding: 1.5rem;
+	overflow-x: auto;
+}
+
+.device-table {
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 0.85rem;
+	min-width: 380px;
+}
+
+.device-table th,
+.device-table td {
+	padding: 0.7rem 1rem;
+	text-align: center;
+	border-bottom: 1px solid var(--border);
+}
+
+.device-table th {
+	font-weight: 700;
+	font-size: 0.75rem;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--text-2);
+}
+
+.device-table th:first-child,
+.device-table td:first-child {
+	text-align: left;
+}
+
+.device-table tbody tr:last-child td {
+	border-bottom: none;
+}
+
+.td-yes  { color: var(--success); font-weight: 700; }
+.td-no   { color: #f87171; font-weight: 700; }
+.td-na   { color: var(--text-3); }
+
+.device-table__note {
+	margin-top: 1rem;
+	font-size: 0.75rem;
+	color: var(--text-3);
+	line-height: 1.6;
+	border-top: 1px solid var(--border);
+	padding-top: 0.75rem;
+}
+
+/* ============================================================
+   PWA install banner
+   ============================================================ */
+.install-banner {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	padding: 1rem 1.25rem;
+	flex-wrap: wrap;
+}
+
+.install-banner__icon img {
+	border-radius: var(--radius-sm);
+	display: block;
+}
+
+.install-banner__text {
+	flex: 1;
+	min-width: 180px;
+}
+
+.install-banner__text strong {
+	display: block;
+	font-size: 0.9rem;
+	margin-bottom: 0.15rem;
+}
+
+.install-banner__text p {
+	font-size: 0.8rem;
+	color: var(--text-2);
+}
+
+.install-banner__btn {
+	flex-shrink: 0;
+	font-size: 0.85rem;
+	padding: 0.55rem 1.2rem;
 }
 
 /* ============================================================

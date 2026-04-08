@@ -2,835 +2,23 @@
 /******/ 	var __webpack_modules__ = ([
 /* 0 */,
 /* 1 */
-/***/ (function(__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": function() { return /* binding */ _asyncToGenerator; }
-/* harmony export */ });
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
-  try {
-    var info = gen[key](arg);
-    var value = info.value;
-  } catch (error) {
-    reject(error);
-    return;
-  }
-
-  if (info.done) {
-    resolve(value);
-  } else {
-    Promise.resolve(value).then(_next, _throw);
-  }
-}
-
-function _asyncToGenerator(fn) {
-  return function () {
-    var self = this,
-        args = arguments;
-    return new Promise(function (resolve, reject) {
-      var gen = fn.apply(self, args);
-
-      function _next(value) {
-        asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
-      }
-
-      function _throw(err) {
-        asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
-      }
-
-      _next(undefined);
-    });
-  };
-}
-
-/***/ }),
-/* 2 */
-/***/ (function(module, __unused_webpack_exports, __webpack_require__) {
-
-module.exports = __webpack_require__(3);
-
-
-/***/ }),
-/* 3 */
-/***/ (function(module) {
-
-/**
- * Copyright (c) 2014-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-var runtime = (function (exports) {
-  "use strict";
-
-  var Op = Object.prototype;
-  var hasOwn = Op.hasOwnProperty;
-  var undefined; // More compressible than void 0.
-  var $Symbol = typeof Symbol === "function" ? Symbol : {};
-  var iteratorSymbol = $Symbol.iterator || "@@iterator";
-  var asyncIteratorSymbol = $Symbol.asyncIterator || "@@asyncIterator";
-  var toStringTagSymbol = $Symbol.toStringTag || "@@toStringTag";
-
-  function define(obj, key, value) {
-    Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: true,
-      configurable: true,
-      writable: true
-    });
-    return obj[key];
-  }
-  try {
-    // IE 8 has a broken Object.defineProperty that only works on DOM objects.
-    define({}, "");
-  } catch (err) {
-    define = function(obj, key, value) {
-      return obj[key] = value;
-    };
-  }
-
-  function wrap(innerFn, outerFn, self, tryLocsList) {
-    // If outerFn provided and outerFn.prototype is a Generator, then outerFn.prototype instanceof Generator.
-    var protoGenerator = outerFn && outerFn.prototype instanceof Generator ? outerFn : Generator;
-    var generator = Object.create(protoGenerator.prototype);
-    var context = new Context(tryLocsList || []);
-
-    // The ._invoke method unifies the implementations of the .next,
-    // .throw, and .return methods.
-    generator._invoke = makeInvokeMethod(innerFn, self, context);
-
-    return generator;
-  }
-  exports.wrap = wrap;
-
-  // Try/catch helper to minimize deoptimizations. Returns a completion
-  // record like context.tryEntries[i].completion. This interface could
-  // have been (and was previously) designed to take a closure to be
-  // invoked without arguments, but in all the cases we care about we
-  // already have an existing method we want to call, so there's no need
-  // to create a new function object. We can even get away with assuming
-  // the method takes exactly one argument, since that happens to be true
-  // in every case, so we don't have to touch the arguments object. The
-  // only additional allocation required is the completion record, which
-  // has a stable shape and so hopefully should be cheap to allocate.
-  function tryCatch(fn, obj, arg) {
-    try {
-      return { type: "normal", arg: fn.call(obj, arg) };
-    } catch (err) {
-      return { type: "throw", arg: err };
-    }
-  }
-
-  var GenStateSuspendedStart = "suspendedStart";
-  var GenStateSuspendedYield = "suspendedYield";
-  var GenStateExecuting = "executing";
-  var GenStateCompleted = "completed";
-
-  // Returning this object from the innerFn has the same effect as
-  // breaking out of the dispatch switch statement.
-  var ContinueSentinel = {};
-
-  // Dummy constructor functions that we use as the .constructor and
-  // .constructor.prototype properties for functions that return Generator
-  // objects. For full spec compliance, you may wish to configure your
-  // minifier not to mangle the names of these two functions.
-  function Generator() {}
-  function GeneratorFunction() {}
-  function GeneratorFunctionPrototype() {}
-
-  // This is a polyfill for %IteratorPrototype% for environments that
-  // don't natively support it.
-  var IteratorPrototype = {};
-  define(IteratorPrototype, iteratorSymbol, function () {
-    return this;
-  });
-
-  var getProto = Object.getPrototypeOf;
-  var NativeIteratorPrototype = getProto && getProto(getProto(values([])));
-  if (NativeIteratorPrototype &&
-      NativeIteratorPrototype !== Op &&
-      hasOwn.call(NativeIteratorPrototype, iteratorSymbol)) {
-    // This environment has a native %IteratorPrototype%; use it instead
-    // of the polyfill.
-    IteratorPrototype = NativeIteratorPrototype;
-  }
-
-  var Gp = GeneratorFunctionPrototype.prototype =
-    Generator.prototype = Object.create(IteratorPrototype);
-  GeneratorFunction.prototype = GeneratorFunctionPrototype;
-  define(Gp, "constructor", GeneratorFunctionPrototype);
-  define(GeneratorFunctionPrototype, "constructor", GeneratorFunction);
-  GeneratorFunction.displayName = define(
-    GeneratorFunctionPrototype,
-    toStringTagSymbol,
-    "GeneratorFunction"
-  );
-
-  // Helper for defining the .next, .throw, and .return methods of the
-  // Iterator interface in terms of a single ._invoke method.
-  function defineIteratorMethods(prototype) {
-    ["next", "throw", "return"].forEach(function(method) {
-      define(prototype, method, function(arg) {
-        return this._invoke(method, arg);
-      });
-    });
-  }
-
-  exports.isGeneratorFunction = function(genFun) {
-    var ctor = typeof genFun === "function" && genFun.constructor;
-    return ctor
-      ? ctor === GeneratorFunction ||
-        // For the native GeneratorFunction constructor, the best we can
-        // do is to check its .name property.
-        (ctor.displayName || ctor.name) === "GeneratorFunction"
-      : false;
-  };
-
-  exports.mark = function(genFun) {
-    if (Object.setPrototypeOf) {
-      Object.setPrototypeOf(genFun, GeneratorFunctionPrototype);
-    } else {
-      genFun.__proto__ = GeneratorFunctionPrototype;
-      define(genFun, toStringTagSymbol, "GeneratorFunction");
-    }
-    genFun.prototype = Object.create(Gp);
-    return genFun;
-  };
-
-  // Within the body of any async function, `await x` is transformed to
-  // `yield regeneratorRuntime.awrap(x)`, so that the runtime can test
-  // `hasOwn.call(value, "__await")` to determine if the yielded value is
-  // meant to be awaited.
-  exports.awrap = function(arg) {
-    return { __await: arg };
-  };
-
-  function AsyncIterator(generator, PromiseImpl) {
-    function invoke(method, arg, resolve, reject) {
-      var record = tryCatch(generator[method], generator, arg);
-      if (record.type === "throw") {
-        reject(record.arg);
-      } else {
-        var result = record.arg;
-        var value = result.value;
-        if (value &&
-            typeof value === "object" &&
-            hasOwn.call(value, "__await")) {
-          return PromiseImpl.resolve(value.__await).then(function(value) {
-            invoke("next", value, resolve, reject);
-          }, function(err) {
-            invoke("throw", err, resolve, reject);
-          });
-        }
-
-        return PromiseImpl.resolve(value).then(function(unwrapped) {
-          // When a yielded Promise is resolved, its final value becomes
-          // the .value of the Promise<{value,done}> result for the
-          // current iteration.
-          result.value = unwrapped;
-          resolve(result);
-        }, function(error) {
-          // If a rejected Promise was yielded, throw the rejection back
-          // into the async generator function so it can be handled there.
-          return invoke("throw", error, resolve, reject);
-        });
-      }
-    }
-
-    var previousPromise;
-
-    function enqueue(method, arg) {
-      function callInvokeWithMethodAndArg() {
-        return new PromiseImpl(function(resolve, reject) {
-          invoke(method, arg, resolve, reject);
-        });
-      }
-
-      return previousPromise =
-        // If enqueue has been called before, then we want to wait until
-        // all previous Promises have been resolved before calling invoke,
-        // so that results are always delivered in the correct order. If
-        // enqueue has not been called before, then it is important to
-        // call invoke immediately, without waiting on a callback to fire,
-        // so that the async generator function has the opportunity to do
-        // any necessary setup in a predictable way. This predictability
-        // is why the Promise constructor synchronously invokes its
-        // executor callback, and why async functions synchronously
-        // execute code before the first await. Since we implement simple
-        // async functions in terms of async generators, it is especially
-        // important to get this right, even though it requires care.
-        previousPromise ? previousPromise.then(
-          callInvokeWithMethodAndArg,
-          // Avoid propagating failures to Promises returned by later
-          // invocations of the iterator.
-          callInvokeWithMethodAndArg
-        ) : callInvokeWithMethodAndArg();
-    }
-
-    // Define the unified helper method that is used to implement .next,
-    // .throw, and .return (see defineIteratorMethods).
-    this._invoke = enqueue;
-  }
-
-  defineIteratorMethods(AsyncIterator.prototype);
-  define(AsyncIterator.prototype, asyncIteratorSymbol, function () {
-    return this;
-  });
-  exports.AsyncIterator = AsyncIterator;
-
-  // Note that simple async functions are implemented on top of
-  // AsyncIterator objects; they just return a Promise for the value of
-  // the final result produced by the iterator.
-  exports.async = function(innerFn, outerFn, self, tryLocsList, PromiseImpl) {
-    if (PromiseImpl === void 0) PromiseImpl = Promise;
-
-    var iter = new AsyncIterator(
-      wrap(innerFn, outerFn, self, tryLocsList),
-      PromiseImpl
-    );
-
-    return exports.isGeneratorFunction(outerFn)
-      ? iter // If outerFn is a generator, return the full iterator.
-      : iter.next().then(function(result) {
-          return result.done ? result.value : iter.next();
-        });
-  };
-
-  function makeInvokeMethod(innerFn, self, context) {
-    var state = GenStateSuspendedStart;
-
-    return function invoke(method, arg) {
-      if (state === GenStateExecuting) {
-        throw new Error("Generator is already running");
-      }
-
-      if (state === GenStateCompleted) {
-        if (method === "throw") {
-          throw arg;
-        }
-
-        // Be forgiving, per 25.3.3.3.3 of the spec:
-        // https://people.mozilla.org/~jorendorff/es6-draft.html#sec-generatorresume
-        return doneResult();
-      }
-
-      context.method = method;
-      context.arg = arg;
-
-      while (true) {
-        var delegate = context.delegate;
-        if (delegate) {
-          var delegateResult = maybeInvokeDelegate(delegate, context);
-          if (delegateResult) {
-            if (delegateResult === ContinueSentinel) continue;
-            return delegateResult;
-          }
-        }
-
-        if (context.method === "next") {
-          // Setting context._sent for legacy support of Babel's
-          // function.sent implementation.
-          context.sent = context._sent = context.arg;
-
-        } else if (context.method === "throw") {
-          if (state === GenStateSuspendedStart) {
-            state = GenStateCompleted;
-            throw context.arg;
-          }
-
-          context.dispatchException(context.arg);
-
-        } else if (context.method === "return") {
-          context.abrupt("return", context.arg);
-        }
-
-        state = GenStateExecuting;
-
-        var record = tryCatch(innerFn, self, context);
-        if (record.type === "normal") {
-          // If an exception is thrown from innerFn, we leave state ===
-          // GenStateExecuting and loop back for another invocation.
-          state = context.done
-            ? GenStateCompleted
-            : GenStateSuspendedYield;
-
-          if (record.arg === ContinueSentinel) {
-            continue;
-          }
-
-          return {
-            value: record.arg,
-            done: context.done
-          };
-
-        } else if (record.type === "throw") {
-          state = GenStateCompleted;
-          // Dispatch the exception by looping back around to the
-          // context.dispatchException(context.arg) call above.
-          context.method = "throw";
-          context.arg = record.arg;
-        }
-      }
-    };
-  }
-
-  // Call delegate.iterator[context.method](context.arg) and handle the
-  // result, either by returning a { value, done } result from the
-  // delegate iterator, or by modifying context.method and context.arg,
-  // setting context.delegate to null, and returning the ContinueSentinel.
-  function maybeInvokeDelegate(delegate, context) {
-    var method = delegate.iterator[context.method];
-    if (method === undefined) {
-      // A .throw or .return when the delegate iterator has no .throw
-      // method always terminates the yield* loop.
-      context.delegate = null;
-
-      if (context.method === "throw") {
-        // Note: ["return"] must be used for ES3 parsing compatibility.
-        if (delegate.iterator["return"]) {
-          // If the delegate iterator has a return method, give it a
-          // chance to clean up.
-          context.method = "return";
-          context.arg = undefined;
-          maybeInvokeDelegate(delegate, context);
-
-          if (context.method === "throw") {
-            // If maybeInvokeDelegate(context) changed context.method from
-            // "return" to "throw", let that override the TypeError below.
-            return ContinueSentinel;
-          }
-        }
-
-        context.method = "throw";
-        context.arg = new TypeError(
-          "The iterator does not provide a 'throw' method");
-      }
-
-      return ContinueSentinel;
-    }
-
-    var record = tryCatch(method, delegate.iterator, context.arg);
-
-    if (record.type === "throw") {
-      context.method = "throw";
-      context.arg = record.arg;
-      context.delegate = null;
-      return ContinueSentinel;
-    }
-
-    var info = record.arg;
-
-    if (! info) {
-      context.method = "throw";
-      context.arg = new TypeError("iterator result is not an object");
-      context.delegate = null;
-      return ContinueSentinel;
-    }
-
-    if (info.done) {
-      // Assign the result of the finished delegate to the temporary
-      // variable specified by delegate.resultName (see delegateYield).
-      context[delegate.resultName] = info.value;
-
-      // Resume execution at the desired location (see delegateYield).
-      context.next = delegate.nextLoc;
-
-      // If context.method was "throw" but the delegate handled the
-      // exception, let the outer generator proceed normally. If
-      // context.method was "next", forget context.arg since it has been
-      // "consumed" by the delegate iterator. If context.method was
-      // "return", allow the original .return call to continue in the
-      // outer generator.
-      if (context.method !== "return") {
-        context.method = "next";
-        context.arg = undefined;
-      }
-
-    } else {
-      // Re-yield the result returned by the delegate method.
-      return info;
-    }
-
-    // The delegate iterator is finished, so forget it and continue with
-    // the outer generator.
-    context.delegate = null;
-    return ContinueSentinel;
-  }
-
-  // Define Generator.prototype.{next,throw,return} in terms of the
-  // unified ._invoke helper method.
-  defineIteratorMethods(Gp);
-
-  define(Gp, toStringTagSymbol, "Generator");
-
-  // A Generator should always return itself as the iterator object when the
-  // @@iterator function is called on it. Some browsers' implementations of the
-  // iterator prototype chain incorrectly implement this, causing the Generator
-  // object to not be returned from this call. This ensures that doesn't happen.
-  // See https://github.com/facebook/regenerator/issues/274 for more details.
-  define(Gp, iteratorSymbol, function() {
-    return this;
-  });
-
-  define(Gp, "toString", function() {
-    return "[object Generator]";
-  });
-
-  function pushTryEntry(locs) {
-    var entry = { tryLoc: locs[0] };
-
-    if (1 in locs) {
-      entry.catchLoc = locs[1];
-    }
-
-    if (2 in locs) {
-      entry.finallyLoc = locs[2];
-      entry.afterLoc = locs[3];
-    }
-
-    this.tryEntries.push(entry);
-  }
-
-  function resetTryEntry(entry) {
-    var record = entry.completion || {};
-    record.type = "normal";
-    delete record.arg;
-    entry.completion = record;
-  }
-
-  function Context(tryLocsList) {
-    // The root entry object (effectively a try statement without a catch
-    // or a finally block) gives us a place to store values thrown from
-    // locations where there is no enclosing try statement.
-    this.tryEntries = [{ tryLoc: "root" }];
-    tryLocsList.forEach(pushTryEntry, this);
-    this.reset(true);
-  }
-
-  exports.keys = function(object) {
-    var keys = [];
-    for (var key in object) {
-      keys.push(key);
-    }
-    keys.reverse();
-
-    // Rather than returning an object with a next method, we keep
-    // things simple and return the next function itself.
-    return function next() {
-      while (keys.length) {
-        var key = keys.pop();
-        if (key in object) {
-          next.value = key;
-          next.done = false;
-          return next;
-        }
-      }
-
-      // To avoid creating an additional object, we just hang the .value
-      // and .done properties off the next function object itself. This
-      // also ensures that the minifier will not anonymize the function.
-      next.done = true;
-      return next;
-    };
-  };
-
-  function values(iterable) {
-    if (iterable) {
-      var iteratorMethod = iterable[iteratorSymbol];
-      if (iteratorMethod) {
-        return iteratorMethod.call(iterable);
-      }
-
-      if (typeof iterable.next === "function") {
-        return iterable;
-      }
-
-      if (!isNaN(iterable.length)) {
-        var i = -1, next = function next() {
-          while (++i < iterable.length) {
-            if (hasOwn.call(iterable, i)) {
-              next.value = iterable[i];
-              next.done = false;
-              return next;
-            }
-          }
-
-          next.value = undefined;
-          next.done = true;
-
-          return next;
-        };
-
-        return next.next = next;
-      }
-    }
-
-    // Return an iterator with no values.
-    return { next: doneResult };
-  }
-  exports.values = values;
-
-  function doneResult() {
-    return { value: undefined, done: true };
-  }
-
-  Context.prototype = {
-    constructor: Context,
-
-    reset: function(skipTempReset) {
-      this.prev = 0;
-      this.next = 0;
-      // Resetting context._sent for legacy support of Babel's
-      // function.sent implementation.
-      this.sent = this._sent = undefined;
-      this.done = false;
-      this.delegate = null;
-
-      this.method = "next";
-      this.arg = undefined;
-
-      this.tryEntries.forEach(resetTryEntry);
-
-      if (!skipTempReset) {
-        for (var name in this) {
-          // Not sure about the optimal order of these conditions:
-          if (name.charAt(0) === "t" &&
-              hasOwn.call(this, name) &&
-              !isNaN(+name.slice(1))) {
-            this[name] = undefined;
-          }
-        }
-      }
-    },
-
-    stop: function() {
-      this.done = true;
-
-      var rootEntry = this.tryEntries[0];
-      var rootRecord = rootEntry.completion;
-      if (rootRecord.type === "throw") {
-        throw rootRecord.arg;
-      }
-
-      return this.rval;
-    },
-
-    dispatchException: function(exception) {
-      if (this.done) {
-        throw exception;
-      }
-
-      var context = this;
-      function handle(loc, caught) {
-        record.type = "throw";
-        record.arg = exception;
-        context.next = loc;
-
-        if (caught) {
-          // If the dispatched exception was caught by a catch block,
-          // then let that catch block handle the exception normally.
-          context.method = "next";
-          context.arg = undefined;
-        }
-
-        return !! caught;
-      }
-
-      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
-        var entry = this.tryEntries[i];
-        var record = entry.completion;
-
-        if (entry.tryLoc === "root") {
-          // Exception thrown outside of any try block that could handle
-          // it, so set the completion value of the entire function to
-          // throw the exception.
-          return handle("end");
-        }
-
-        if (entry.tryLoc <= this.prev) {
-          var hasCatch = hasOwn.call(entry, "catchLoc");
-          var hasFinally = hasOwn.call(entry, "finallyLoc");
-
-          if (hasCatch && hasFinally) {
-            if (this.prev < entry.catchLoc) {
-              return handle(entry.catchLoc, true);
-            } else if (this.prev < entry.finallyLoc) {
-              return handle(entry.finallyLoc);
-            }
-
-          } else if (hasCatch) {
-            if (this.prev < entry.catchLoc) {
-              return handle(entry.catchLoc, true);
-            }
-
-          } else if (hasFinally) {
-            if (this.prev < entry.finallyLoc) {
-              return handle(entry.finallyLoc);
-            }
-
-          } else {
-            throw new Error("try statement without catch or finally");
-          }
-        }
-      }
-    },
-
-    abrupt: function(type, arg) {
-      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
-        var entry = this.tryEntries[i];
-        if (entry.tryLoc <= this.prev &&
-            hasOwn.call(entry, "finallyLoc") &&
-            this.prev < entry.finallyLoc) {
-          var finallyEntry = entry;
-          break;
-        }
-      }
-
-      if (finallyEntry &&
-          (type === "break" ||
-           type === "continue") &&
-          finallyEntry.tryLoc <= arg &&
-          arg <= finallyEntry.finallyLoc) {
-        // Ignore the finally entry if control is not jumping to a
-        // location outside the try/catch block.
-        finallyEntry = null;
-      }
-
-      var record = finallyEntry ? finallyEntry.completion : {};
-      record.type = type;
-      record.arg = arg;
-
-      if (finallyEntry) {
-        this.method = "next";
-        this.next = finallyEntry.finallyLoc;
-        return ContinueSentinel;
-      }
-
-      return this.complete(record);
-    },
-
-    complete: function(record, afterLoc) {
-      if (record.type === "throw") {
-        throw record.arg;
-      }
-
-      if (record.type === "break" ||
-          record.type === "continue") {
-        this.next = record.arg;
-      } else if (record.type === "return") {
-        this.rval = this.arg = record.arg;
-        this.method = "return";
-        this.next = "end";
-      } else if (record.type === "normal" && afterLoc) {
-        this.next = afterLoc;
-      }
-
-      return ContinueSentinel;
-    },
-
-    finish: function(finallyLoc) {
-      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
-        var entry = this.tryEntries[i];
-        if (entry.finallyLoc === finallyLoc) {
-          this.complete(entry.completion, entry.afterLoc);
-          resetTryEntry(entry);
-          return ContinueSentinel;
-        }
-      }
-    },
-
-    "catch": function(tryLoc) {
-      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
-        var entry = this.tryEntries[i];
-        if (entry.tryLoc === tryLoc) {
-          var record = entry.completion;
-          if (record.type === "throw") {
-            var thrown = record.arg;
-            resetTryEntry(entry);
-          }
-          return thrown;
-        }
-      }
-
-      // The context.catch method must only be called with a location
-      // argument that corresponds to a known catch block.
-      throw new Error("illegal catch attempt");
-    },
-
-    delegateYield: function(iterable, resultName, nextLoc) {
-      this.delegate = {
-        iterator: values(iterable),
-        resultName: resultName,
-        nextLoc: nextLoc
-      };
-
-      if (this.method === "next") {
-        // Deliberately forget the last sent value so that we don't
-        // accidentally pass it on to the delegate.
-        this.arg = undefined;
-      }
-
-      return ContinueSentinel;
-    }
-  };
-
-  // Regardless of whether this script is executing as a CommonJS module
-  // or not, return the runtime object so that we can declare the variable
-  // regeneratorRuntime in the outer scope, which allows this module to be
-  // injected easily by `bin/regenerator --include-runtime script.js`.
-  return exports;
-
-}(
-  // If this script is executing as a CommonJS module, use module.exports
-  // as the regeneratorRuntime namespace. Otherwise create a new empty
-  // object. Either way, the resulting object will be used to initialize
-  // the regeneratorRuntime variable at the top of this file.
-   true ? module.exports : 0
-));
-
-try {
-  regeneratorRuntime = runtime;
-} catch (accidentalStrictMode) {
-  // This module should not be running in strict mode, so the above
-  // assignment should always work unless something is misconfigured. Just
-  // in case runtime.js accidentally runs in strict mode, in modern engines
-  // we can explicitly access globalThis. In older engines we can escape
-  // strict mode using a global Function call. This could conceivably fail
-  // if a Content Security Policy forbids using Function, but in that case
-  // the proper solution is to fix the accidental strict mode problem. If
-  // you've misconfigured your bundler to force strict mode and applied a
-  // CSP to forbid Function, and you're not willing to fix either of those
-  // problems, please detail your unique predicament in a GitHub issue.
-  if (typeof globalThis === "object") {
-    globalThis.regeneratorRuntime = runtime;
-  } else {
-    Function("r", "regeneratorRuntime = r")(runtime);
-  }
-}
-
-
-/***/ }),
-/* 4 */
 /***/ (function(__unused_webpack_module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(5);
+/* harmony import */ var _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(2);
 /* harmony import */ var _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _node_modules_style_loader_dist_runtime_styleDomAPI_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(6);
+/* harmony import */ var _node_modules_style_loader_dist_runtime_styleDomAPI_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(3);
 /* harmony import */ var _node_modules_style_loader_dist_runtime_styleDomAPI_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_node_modules_style_loader_dist_runtime_styleDomAPI_js__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _node_modules_style_loader_dist_runtime_insertBySelector_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(7);
+/* harmony import */ var _node_modules_style_loader_dist_runtime_insertBySelector_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(4);
 /* harmony import */ var _node_modules_style_loader_dist_runtime_insertBySelector_js__WEBPACK_IMPORTED_MODULE_2___default = /*#__PURE__*/__webpack_require__.n(_node_modules_style_loader_dist_runtime_insertBySelector_js__WEBPACK_IMPORTED_MODULE_2__);
-/* harmony import */ var _node_modules_style_loader_dist_runtime_setAttributesWithoutAttributes_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(8);
+/* harmony import */ var _node_modules_style_loader_dist_runtime_setAttributesWithoutAttributes_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(5);
 /* harmony import */ var _node_modules_style_loader_dist_runtime_setAttributesWithoutAttributes_js__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(_node_modules_style_loader_dist_runtime_setAttributesWithoutAttributes_js__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var _node_modules_style_loader_dist_runtime_insertStyleElement_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(9);
+/* harmony import */ var _node_modules_style_loader_dist_runtime_insertStyleElement_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(6);
 /* harmony import */ var _node_modules_style_loader_dist_runtime_insertStyleElement_js__WEBPACK_IMPORTED_MODULE_4___default = /*#__PURE__*/__webpack_require__.n(_node_modules_style_loader_dist_runtime_insertStyleElement_js__WEBPACK_IMPORTED_MODULE_4__);
-/* harmony import */ var _node_modules_style_loader_dist_runtime_styleTagTransform_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(10);
+/* harmony import */ var _node_modules_style_loader_dist_runtime_styleTagTransform_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(7);
 /* harmony import */ var _node_modules_style_loader_dist_runtime_styleTagTransform_js__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__webpack_require__.n(_node_modules_style_loader_dist_runtime_styleTagTransform_js__WEBPACK_IMPORTED_MODULE_5__);
-/* harmony import */ var _node_modules_css_loader_dist_cjs_js_main_css__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(11);
+/* harmony import */ var _node_modules_css_loader_dist_cjs_js_main_css__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(8);
 
       
       
@@ -846,9 +34,7 @@ var options = {};
 
 options.styleTagTransform = (_node_modules_style_loader_dist_runtime_styleTagTransform_js__WEBPACK_IMPORTED_MODULE_5___default());
 options.setAttributes = (_node_modules_style_loader_dist_runtime_setAttributesWithoutAttributes_js__WEBPACK_IMPORTED_MODULE_3___default());
-
-      options.insert = _node_modules_style_loader_dist_runtime_insertBySelector_js__WEBPACK_IMPORTED_MODULE_2___default().bind(null, "head");
-    
+options.insert = _node_modules_style_loader_dist_runtime_insertBySelector_js__WEBPACK_IMPORTED_MODULE_2___default().bind(null, "head");
 options.domAPI = (_node_modules_style_loader_dist_runtime_styleDomAPI_js__WEBPACK_IMPORTED_MODULE_1___default());
 options.insertStyleElement = (_node_modules_style_loader_dist_runtime_insertStyleElement_js__WEBPACK_IMPORTED_MODULE_4___default());
 
@@ -861,31 +47,26 @@ var update = _node_modules_style_loader_dist_runtime_injectStylesIntoStyleTag_js
 
 
 /***/ }),
-/* 5 */
+/* 2 */
 /***/ (function(module) {
 
 "use strict";
 
 
 var stylesInDOM = [];
-
 function getIndexByIdentifier(identifier) {
   var result = -1;
-
   for (var i = 0; i < stylesInDOM.length; i++) {
     if (stylesInDOM[i].identifier === identifier) {
       result = i;
       break;
     }
   }
-
   return result;
 }
-
 function modulesToDom(list, options) {
   var idCountMap = {};
   var identifiers = [];
-
   for (var i = 0; i < list.length; i++) {
     var item = list[i];
     var id = options.base ? item[0] + options.base : item[0];
@@ -900,7 +81,6 @@ function modulesToDom(list, options) {
       supports: item[4],
       layer: item[5]
     };
-
     if (indexByIdentifier !== -1) {
       stylesInDOM[indexByIdentifier].references++;
       stylesInDOM[indexByIdentifier].updater(obj);
@@ -913,65 +93,51 @@ function modulesToDom(list, options) {
         references: 1
       });
     }
-
     identifiers.push(identifier);
   }
-
   return identifiers;
 }
-
 function addElementStyle(obj, options) {
   var api = options.domAPI(options);
   api.update(obj);
-
   var updater = function updater(newObj) {
     if (newObj) {
       if (newObj.css === obj.css && newObj.media === obj.media && newObj.sourceMap === obj.sourceMap && newObj.supports === obj.supports && newObj.layer === obj.layer) {
         return;
       }
-
       api.update(obj = newObj);
     } else {
       api.remove();
     }
   };
-
   return updater;
 }
-
 module.exports = function (list, options) {
   options = options || {};
   list = list || [];
   var lastIdentifiers = modulesToDom(list, options);
   return function update(newList) {
     newList = newList || [];
-
     for (var i = 0; i < lastIdentifiers.length; i++) {
       var identifier = lastIdentifiers[i];
       var index = getIndexByIdentifier(identifier);
       stylesInDOM[index].references--;
     }
-
     var newLastIdentifiers = modulesToDom(newList, options);
-
     for (var _i = 0; _i < lastIdentifiers.length; _i++) {
       var _identifier = lastIdentifiers[_i];
-
       var _index = getIndexByIdentifier(_identifier);
-
       if (stylesInDOM[_index].references === 0) {
         stylesInDOM[_index].updater();
-
         stylesInDOM.splice(_index, 1);
       }
     }
-
     lastIdentifiers = newLastIdentifiers;
   };
 };
 
 /***/ }),
-/* 6 */
+/* 3 */
 /***/ (function(module) {
 
 "use strict";
@@ -980,59 +146,51 @@ module.exports = function (list, options) {
 /* istanbul ignore next  */
 function apply(styleElement, options, obj) {
   var css = "";
-
   if (obj.supports) {
     css += "@supports (".concat(obj.supports, ") {");
   }
-
   if (obj.media) {
     css += "@media ".concat(obj.media, " {");
   }
-
   var needLayer = typeof obj.layer !== "undefined";
-
   if (needLayer) {
     css += "@layer".concat(obj.layer.length > 0 ? " ".concat(obj.layer) : "", " {");
   }
-
   css += obj.css;
-
   if (needLayer) {
     css += "}";
   }
-
   if (obj.media) {
     css += "}";
   }
-
   if (obj.supports) {
     css += "}";
   }
-
   var sourceMap = obj.sourceMap;
-
   if (sourceMap && typeof btoa !== "undefined") {
     css += "\n/*# sourceMappingURL=data:application/json;base64,".concat(btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))), " */");
-  } // For old IE
+  }
 
+  // For old IE
   /* istanbul ignore if  */
-
-
   options.styleTagTransform(css, styleElement, options.options);
 }
-
 function removeStyleElement(styleElement) {
   // istanbul ignore if
   if (styleElement.parentNode === null) {
     return false;
   }
-
   styleElement.parentNode.removeChild(styleElement);
 }
+
 /* istanbul ignore next  */
-
-
 function domAPI(options) {
+  if (typeof document === "undefined") {
+    return {
+      update: function update() {},
+      remove: function remove() {}
+    };
+  }
   var styleElement = options.insertStyleElement(options);
   return {
     update: function update(obj) {
@@ -1043,23 +201,23 @@ function domAPI(options) {
     }
   };
 }
-
 module.exports = domAPI;
 
 /***/ }),
-/* 7 */
+/* 4 */
 /***/ (function(module) {
 
 "use strict";
 
 
 var memo = {};
-/* istanbul ignore next  */
 
+/* istanbul ignore next  */
 function getTarget(target) {
   if (typeof memo[target] === "undefined") {
-    var styleTarget = document.querySelector(target); // Special case to return head of iframe instead of iframe itself
+    var styleTarget = document.querySelector(target);
 
+    // Special case to return head of iframe instead of iframe itself
     if (window.HTMLIFrameElement && styleTarget instanceof window.HTMLIFrameElement) {
       try {
         // This will throw an exception if access to iframe is blocked
@@ -1070,29 +228,23 @@ function getTarget(target) {
         styleTarget = null;
       }
     }
-
     memo[target] = styleTarget;
   }
-
   return memo[target];
 }
+
 /* istanbul ignore next  */
-
-
 function insertBySelector(insert, style) {
   var target = getTarget(insert);
-
   if (!target) {
     throw new Error("Couldn't find a style target. This probably means that the value for the 'insert' parameter is invalid.");
   }
-
   target.appendChild(style);
 }
-
 module.exports = insertBySelector;
 
 /***/ }),
-/* 8 */
+/* 5 */
 /***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
 "use strict";
@@ -1101,16 +253,14 @@ module.exports = insertBySelector;
 /* istanbul ignore next  */
 function setAttributesWithoutAttributes(styleElement) {
   var nonce =  true ? __webpack_require__.nc : 0;
-
   if (nonce) {
     styleElement.setAttribute("nonce", nonce);
   }
 }
-
 module.exports = setAttributesWithoutAttributes;
 
 /***/ }),
-/* 9 */
+/* 6 */
 /***/ (function(module) {
 
 "use strict";
@@ -1123,11 +273,10 @@ function insertStyleElement(options) {
   options.insert(element, options.options);
   return element;
 }
-
 module.exports = insertStyleElement;
 
 /***/ }),
-/* 10 */
+/* 7 */
 /***/ (function(module) {
 
 "use strict";
@@ -1141,35 +290,33 @@ function styleTagTransform(css, styleElement) {
     while (styleElement.firstChild) {
       styleElement.removeChild(styleElement.firstChild);
     }
-
     styleElement.appendChild(document.createTextNode(css));
   }
 }
-
 module.exports = styleTagTransform;
 
 /***/ }),
-/* 11 */
+/* 8 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(12);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(9);
 /* harmony import */ var _node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(13);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(10);
 /* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__);
 // Imports
 
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()((_node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default()));
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, "/* ============================================================\n   Design tokens\n   ============================================================ */\n:root {\n\t--bg:          #08080f;\n\t--bg-2:        #0e0e1a;\n\t--surface:     rgba(255, 255, 255, 0.04);\n\t--surface-2:   rgba(255, 255, 255, 0.07);\n\t--border:      rgba(255, 255, 255, 0.08);\n\t--border-2:    rgba(255, 255, 255, 0.14);\n\t--text-1:      #f1f5f9;\n\t--text-2:      #94a3b8;\n\t--text-3:      #64748b;\n\t--accent-1:    #818cf8;\n\t--accent-2:    #22d3ee;\n\t--success:     #4ade80;\n\t--warning:     #fbbf24;\n\t--radius-sm:   10px;\n\t--radius-md:   18px;\n\t--radius-lg:   26px;\n\t--font:        system-ui, -apple-system, \"Segoe UI\", sans-serif;\n\t--font-mono:   ui-monospace, \"Fira Code\", \"Cascadia Code\", monospace;\n}\n\n/* ============================================================\n   Reset & base\n   ============================================================ */\n*, *::before, *::after {\n\tbox-sizing: border-box;\n\tmargin: 0;\n\tpadding: 0;\n}\n\nhtml {\n\tscroll-behavior: smooth;\n}\n\nbody {\n\tbackground-color: var(--bg);\n\tbackground-image:\n\t\tradial-gradient(ellipse 80% 50% at 50% -20%, rgba(129, 140, 248, 0.12), transparent),\n\t\tradial-gradient(ellipse 60% 40% at 80% 80%,  rgba(34, 211, 238, 0.06),  transparent);\n\tcolor: var(--text-1);\n\tfont-family: var(--font);\n\tmin-height: 100vh;\n\tline-height: 1.6;\n\t-webkit-font-smoothing: antialiased;\n}\n\n/* ============================================================\n   Hero header\n   ============================================================ */\n.hero {\n\tpadding: 5rem 1.5rem 3rem;\n\ttext-align: center;\n}\n\n.hero__inner {\n\tmax-width: 640px;\n\tmargin: 0 auto;\n}\n\n.hero__badge {\n\tdisplay: inline-block;\n\tfont-size: 0.7rem;\n\tfont-weight: 700;\n\tletter-spacing: 0.1em;\n\ttext-transform: uppercase;\n\tcolor: var(--accent-1);\n\tborder: 1px solid rgba(129, 140, 248, 0.3);\n\tborder-radius: 999px;\n\tpadding: 0.3em 0.9em;\n\tmargin-bottom: 1.25rem;\n\tbackground: rgba(129, 140, 248, 0.08);\n}\n\n.hero__title {\n\tfont-size: clamp(2rem, 6vw, 3.5rem);\n\tfont-weight: 800;\n\tletter-spacing: -0.03em;\n\tline-height: 1.1;\n\tmargin-bottom: 1rem;\n}\n\n.gradient-text {\n\tbackground: linear-gradient(135deg, var(--accent-1) 0%, var(--accent-2) 100%);\n\t-webkit-background-clip: text;\n\t-webkit-text-fill-color: transparent;\n\tbackground-clip: text;\n}\n\n.hero__subtitle {\n\tfont-size: 1rem;\n\tcolor: var(--text-2);\n\tmax-width: 480px;\n\tmargin: 0 auto;\n}\n\n.hero__subtitle code {\n\tfont-family: var(--font-mono);\n\tfont-size: 0.9em;\n\tcolor: var(--accent-1);\n\tbackground: rgba(129, 140, 248, 0.1);\n\tpadding: 0.1em 0.4em;\n\tborder-radius: 4px;\n}\n\n/* ============================================================\n   Main layout\n   ============================================================ */\nmain {\n\tmax-width: 980px;\n\tmargin: 0 auto;\n\tpadding: 0 1.5rem 5rem;\n\tdisplay: flex;\n\tflex-direction: column;\n\tgap: 4rem;\n}\n\n/* ============================================================\n   Glass card utility\n   ============================================================ */\n.glass-card {\n\tbackground: var(--surface);\n\tborder: 1px solid var(--border);\n\tborder-radius: var(--radius-md);\n\tbackdrop-filter: blur(20px);\n\t-webkit-backdrop-filter: blur(20px);\n}\n\n/* ============================================================\n   Section header\n   ============================================================ */\n.section-header {\n\tmargin-bottom: 1.5rem;\n}\n\n.section-header h2 {\n\tfont-size: 1.5rem;\n\tfont-weight: 700;\n\tletter-spacing: -0.02em;\n\tmargin-bottom: 0.4rem;\n}\n\n.section-desc {\n\tcolor: var(--text-2);\n\tfont-size: 0.9rem;\n}\n\n/* ============================================================\n   Scanner section\n   ============================================================ */\n.scanner-card {\n\toverflow: hidden;\n}\n\n.video-wrapper {\n\tposition: relative;\n\tbackground: #000;\n\tborder-radius: var(--radius-md) var(--radius-md) 0 0;\n\toverflow: hidden;\n\taspect-ratio: 4/3;\n\tmax-height: 520px;\n\ttransition: box-shadow 0.25s ease;\n}\n\n.video-wrapper.detected {\n\tbox-shadow: 0 0 0 3px var(--success), 0 0 48px rgba(74, 222, 128, 0.25);\n}\n\n#barcodecamera {\n\twidth: 100%;\n\theight: 100%;\n\tobject-fit: cover;\n\tdisplay: block;\n\tborder-radius: 0;\n}\n\n/* Scan overlay */\n.scan-overlay {\n\tposition: absolute;\n\tinset: 0;\n\tpointer-events: none;\n}\n\n/* Animated scan line */\n.scan-line {\n\tposition: absolute;\n\tleft: 5%;\n\tright: 5%;\n\theight: 2px;\n\tbackground: linear-gradient(90deg, transparent, var(--accent-1), var(--accent-2), transparent);\n\ttop: 10%;\n\tborder-radius: 1px;\n\topacity: 0;\n}\n\n.scan-overlay.is-active .scan-line {\n\tanimation: scanMove 2.6s ease-in-out infinite;\n}\n\n@keyframes scanMove {\n\t0%   { top: 8%;  opacity: 0; }\n\t8%   { opacity: 1; }\n\t92%  { opacity: 1; }\n\t100% { top: 88%; opacity: 0; }\n}\n\n/* Corner brackets */\n.scan-corners {\n\tposition: absolute;\n\tinset: 12%;\n}\n\n.scan-corners span {\n\tposition: absolute;\n\twidth: 22px;\n\theight: 22px;\n\tborder-color: var(--accent-1);\n\tborder-style: solid;\n\topacity: 0;\n\ttransition: opacity 0.4s ease;\n}\n\n.scan-overlay.is-active .scan-corners span {\n\topacity: 0.7;\n}\n\n.scan-corners span:nth-child(1) { top: 0; left: 0;  border-width: 2px 0 0 2px; border-radius: 3px 0 0 0; }\n.scan-corners span:nth-child(2) { top: 0; right: 0; border-width: 2px 2px 0 0; border-radius: 0 3px 0 0; }\n.scan-corners span:nth-child(3) { bottom: 0; left: 0;  border-width: 0 0 2px 2px; border-radius: 0 0 0 3px; }\n.scan-corners span:nth-child(4) { bottom: 0; right: 0; border-width: 0 2px 2px 0; border-radius: 0 0 3px 0; }\n\n/* Status badge */\n.status-badge {\n\tposition: absolute;\n\tbottom: 1rem;\n\tleft: 50%;\n\ttransform: translateX(-50%);\n\tfont-size: 0.75rem;\n\tfont-weight: 600;\n\tletter-spacing: 0.04em;\n\tcolor: var(--text-1);\n\tbackground: rgba(8, 8, 15, 0.7);\n\tborder: 1px solid var(--border);\n\tborder-radius: 999px;\n\tpadding: 0.35em 1em;\n\twhite-space: nowrap;\n\tbackdrop-filter: blur(8px);\n\t-webkit-backdrop-filter: blur(8px);\n}\n\n/* Controls */\n.scanner-controls {\n\tdisplay: flex;\n\tflex-direction: column;\n\talign-items: center;\n\tgap: 0.75rem;\n\tpadding: 1.25rem 1.5rem;\n}\n\n/* ============================================================\n   Button\n   ============================================================ */\n.btn {\n\tdisplay: inline-flex;\n\talign-items: center;\n\tgap: 0.5rem;\n\tpadding: 0.65rem 1.5rem;\n\tborder: none;\n\tborder-radius: var(--radius-sm);\n\tfont-family: var(--font);\n\tfont-size: 0.9rem;\n\tfont-weight: 600;\n\tcursor: pointer;\n\ttransition: opacity 0.2s ease, transform 0.15s ease;\n\ttext-decoration: none;\n}\n\n.btn--primary {\n\tbackground: linear-gradient(135deg, var(--accent-1) 0%, var(--accent-2) 100%);\n\tcolor: #fff;\n}\n\n.btn--primary:hover {\n\topacity: 0.88;\n\ttransform: translateY(-1px);\n}\n\n.btn--primary:active {\n\ttransform: translateY(0);\n\topacity: 0.95;\n}\n\n.btn:disabled {\n\topacity: 0.4;\n\tcursor: not-allowed;\n\ttransform: none;\n}\n\n/* Compat warning */\n.compat-warning {\n\tdisplay: flex;\n\talign-items: center;\n\tgap: 0.5rem;\n\tfont-size: 0.8rem;\n\tcolor: var(--warning);\n\tbackground: rgba(251, 191, 36, 0.08);\n\tborder: 1px solid rgba(251, 191, 36, 0.2);\n\tborder-radius: var(--radius-sm);\n\tpadding: 0.6rem 1rem;\n\tmax-width: 420px;\n\ttext-align: left;\n}\n\n/* ============================================================\n   Sample barcodes — bento grid\n   ============================================================ */\n.bento-grid {\n\tdisplay: grid;\n\tgrid-template-columns: repeat(auto-fill, minmax(180px, 1fr));\n\tgap: 1rem;\n}\n\n.sample-card {\n\tpadding: 1.25rem 1rem 1rem;\n\tdisplay: flex;\n\tflex-direction: column;\n\talign-items: center;\n\tgap: 0.5rem;\n\ttransition: border-color 0.2s ease, background 0.2s ease;\n}\n\n.sample-card:hover {\n\tbackground: var(--surface-2);\n\tborder-color: var(--border-2);\n}\n\n.sample-card h3 {\n\tfont-size: 0.8rem;\n\tfont-weight: 700;\n\tletter-spacing: 0.06em;\n\ttext-transform: uppercase;\n\tcolor: var(--accent-1);\n\talign-self: flex-start;\n}\n\n.sample-value {\n\tfont-family: var(--font-mono);\n\tfont-size: 0.65rem;\n\tcolor: var(--text-3);\n\tword-break: break-all;\n\ttext-align: center;\n\tline-height: 1.4;\n\talign-self: flex-start;\n}\n\n.sample-canvas-wrap {\n\twidth: 100%;\n\tdisplay: flex;\n\tjustify-content: center;\n\talign-items: center;\n\tmargin-top: 0.5rem;\n}\n\n.sample-canvas-wrap canvas,\n.sample-canvas-wrap svg {\n\tmax-width: 100%;\n\theight: auto;\n}\n\n/* ============================================================\n   Code section\n   ============================================================ */\n.code-card {\n\tposition: relative;\n\toverflow: hidden;\n}\n\n.code-card__header {\n\tdisplay: flex;\n\talign-items: center;\n\tjustify-content: space-between;\n\tpadding: 0.75rem 1.25rem;\n\tborder-bottom: 1px solid var(--border);\n\tbackground: rgba(255, 255, 255, 0.02);\n}\n\n.code-lang {\n\tfont-size: 0.7rem;\n\tfont-weight: 700;\n\tletter-spacing: 0.1em;\n\ttext-transform: uppercase;\n\tcolor: var(--text-3);\n}\n\n.copy-btn {\n\tdisplay: inline-flex;\n\talign-items: center;\n\tgap: 0.4rem;\n\tfont-size: 0.78rem;\n\tfont-weight: 600;\n\tfont-family: var(--font);\n\tcolor: var(--text-2);\n\tbackground: var(--surface-2);\n\tborder: 1px solid var(--border);\n\tborder-radius: 6px;\n\tpadding: 0.35em 0.75em;\n\tcursor: pointer;\n\ttransition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;\n}\n\n.copy-btn:hover {\n\tcolor: var(--text-1);\n\tbackground: rgba(255, 255, 255, 0.1);\n\tborder-color: var(--border-2);\n}\n\n.copy-btn.copied {\n\tcolor: var(--success);\n\tborder-color: rgba(74, 222, 128, 0.3);\n}\n\n.code-card pre {\n\toverflow-x: auto;\n\tpadding: 1.5rem;\n}\n\n.code-card code {\n\tfont-family: var(--font-mono);\n\tfont-size: 0.8rem;\n\tline-height: 1.75;\n\tcolor: var(--text-1);\n\twhite-space: pre;\n\tdisplay: block;\n}\n\n/* ============================================================\n   About grid\n   ============================================================ */\n.about-grid {\n\tdisplay: grid;\n\tgrid-template-columns: repeat(auto-fill, minmax(200px, 1fr));\n\tgap: 1rem;\n}\n\n.about-card {\n\tpadding: 1.5rem 1.25rem;\n\tdisplay: flex;\n\tflex-direction: column;\n\tgap: 0.6rem;\n}\n\n.about-card__icon {\n\tfont-size: 1.5rem;\n\tline-height: 1;\n}\n\n.about-card h3 {\n\tfont-size: 0.95rem;\n\tfont-weight: 700;\n}\n\n.about-card p {\n\tfont-size: 0.85rem;\n\tcolor: var(--text-2);\n\tline-height: 1.6;\n}\n\n/* ============================================================\n   Footer\n   ============================================================ */\n.site-footer {\n\ttext-align: center;\n\tpadding: 2rem 1.5rem 3rem;\n\tfont-size: 0.8rem;\n\tcolor: var(--text-3);\n}\n\n.site-footer a {\n\tcolor: var(--accent-1);\n\ttext-decoration: none;\n}\n\n.site-footer a:hover {\n\ttext-decoration: underline;\n}\n\n/* ============================================================\n   Snackbar\n   ============================================================ */\n.snackbar {\n\tposition: fixed;\n\tbottom: 2rem;\n\tleft: 50%;\n\ttransform: translateX(-50%) translateY(200%);\n\ttransition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);\n\tz-index: 100;\n\tmin-width: 280px;\n\tmax-width: min(480px, calc(100vw - 2rem));\n\tbackground: rgba(14, 14, 26, 0.95);\n\tbackdrop-filter: blur(24px);\n\t-webkit-backdrop-filter: blur(24px);\n\tborder: 1px solid rgba(129, 140, 248, 0.25);\n\tborder-radius: var(--radius-md);\n\tbox-shadow:\n\t\t0 8px 32px rgba(0, 0, 0, 0.5),\n\t\t0 0 40px rgba(129, 140, 248, 0.08);\n\toverflow: hidden;\n}\n\n.snackbar.is-visible {\n\ttransform: translateX(-50%) translateY(0);\n}\n\n.snackbar__content {\n\tdisplay: flex;\n\talign-items: center;\n\tgap: 0.75rem;\n\tpadding: 0.9rem 1.25rem 0.75rem;\n}\n\n.snackbar__badge {\n\tflex-shrink: 0;\n\tfont-size: 0.62rem;\n\tfont-weight: 800;\n\ttext-transform: uppercase;\n\tletter-spacing: 0.07em;\n\tpadding: 0.22em 0.6em;\n\tborder-radius: 5px;\n\tbackground: linear-gradient(135deg, var(--accent-1), var(--accent-2));\n\tcolor: #fff;\n\twhite-space: nowrap;\n}\n\n.snackbar__value {\n\tfont-family: var(--font-mono);\n\tfont-size: 0.88rem;\n\tcolor: var(--text-1);\n\toverflow: hidden;\n\ttext-overflow: ellipsis;\n\twhite-space: nowrap;\n\tflex: 1;\n}\n\n.snackbar__progress {\n\theight: 3px;\n\tbackground: linear-gradient(90deg, var(--accent-1), var(--accent-2));\n\ttransform-origin: left center;\n\ttransform: scaleX(1);\n}\n\n.snackbar.is-visible .snackbar__progress {\n\tanimation: progressShrink 4s linear forwards;\n}\n\n@keyframes progressShrink {\n\tto { transform: scaleX(0); }\n}\n\n/* ============================================================\n   Responsive\n   ============================================================ */\n@media (max-width: 640px) {\n\t.hero {\n\t\tpadding: 3.5rem 1rem 2rem;\n\t}\n\n\t.video-wrapper {\n\t\taspect-ratio: 3/4;\n\t\tmax-height: 420px;\n\t}\n\n\t.bento-grid {\n\t\tgrid-template-columns: repeat(2, 1fr);\n\t}\n\n\t.about-grid {\n\t\tgrid-template-columns: 1fr 1fr;\n\t}\n\n\t.snackbar {\n\t\tbottom: 1rem;\n\t}\n}\n\n@media (max-width: 400px) {\n\t.bento-grid {\n\t\tgrid-template-columns: 1fr;\n\t}\n\n\t.about-grid {\n\t\tgrid-template-columns: 1fr;\n\t}\n}\n", "",{"version":3,"sources":["webpack://./src/styles/main.css"],"names":[],"mappings":"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","sourcesContent":["/* ============================================================\n   Design tokens\n   ============================================================ */\n:root {\n\t--bg:          #08080f;\n\t--bg-2:        #0e0e1a;\n\t--surface:     rgba(255, 255, 255, 0.04);\n\t--surface-2:   rgba(255, 255, 255, 0.07);\n\t--border:      rgba(255, 255, 255, 0.08);\n\t--border-2:    rgba(255, 255, 255, 0.14);\n\t--text-1:      #f1f5f9;\n\t--text-2:      #94a3b8;\n\t--text-3:      #64748b;\n\t--accent-1:    #818cf8;\n\t--accent-2:    #22d3ee;\n\t--success:     #4ade80;\n\t--warning:     #fbbf24;\n\t--radius-sm:   10px;\n\t--radius-md:   18px;\n\t--radius-lg:   26px;\n\t--font:        system-ui, -apple-system, \"Segoe UI\", sans-serif;\n\t--font-mono:   ui-monospace, \"Fira Code\", \"Cascadia Code\", monospace;\n}\n\n/* ============================================================\n   Reset & base\n   ============================================================ */\n*, *::before, *::after {\n\tbox-sizing: border-box;\n\tmargin: 0;\n\tpadding: 0;\n}\n\nhtml {\n\tscroll-behavior: smooth;\n}\n\nbody {\n\tbackground-color: var(--bg);\n\tbackground-image:\n\t\tradial-gradient(ellipse 80% 50% at 50% -20%, rgba(129, 140, 248, 0.12), transparent),\n\t\tradial-gradient(ellipse 60% 40% at 80% 80%,  rgba(34, 211, 238, 0.06),  transparent);\n\tcolor: var(--text-1);\n\tfont-family: var(--font);\n\tmin-height: 100vh;\n\tline-height: 1.6;\n\t-webkit-font-smoothing: antialiased;\n}\n\n/* ============================================================\n   Hero header\n   ============================================================ */\n.hero {\n\tpadding: 5rem 1.5rem 3rem;\n\ttext-align: center;\n}\n\n.hero__inner {\n\tmax-width: 640px;\n\tmargin: 0 auto;\n}\n\n.hero__badge {\n\tdisplay: inline-block;\n\tfont-size: 0.7rem;\n\tfont-weight: 700;\n\tletter-spacing: 0.1em;\n\ttext-transform: uppercase;\n\tcolor: var(--accent-1);\n\tborder: 1px solid rgba(129, 140, 248, 0.3);\n\tborder-radius: 999px;\n\tpadding: 0.3em 0.9em;\n\tmargin-bottom: 1.25rem;\n\tbackground: rgba(129, 140, 248, 0.08);\n}\n\n.hero__title {\n\tfont-size: clamp(2rem, 6vw, 3.5rem);\n\tfont-weight: 800;\n\tletter-spacing: -0.03em;\n\tline-height: 1.1;\n\tmargin-bottom: 1rem;\n}\n\n.gradient-text {\n\tbackground: linear-gradient(135deg, var(--accent-1) 0%, var(--accent-2) 100%);\n\t-webkit-background-clip: text;\n\t-webkit-text-fill-color: transparent;\n\tbackground-clip: text;\n}\n\n.hero__subtitle {\n\tfont-size: 1rem;\n\tcolor: var(--text-2);\n\tmax-width: 480px;\n\tmargin: 0 auto;\n}\n\n.hero__subtitle code {\n\tfont-family: var(--font-mono);\n\tfont-size: 0.9em;\n\tcolor: var(--accent-1);\n\tbackground: rgba(129, 140, 248, 0.1);\n\tpadding: 0.1em 0.4em;\n\tborder-radius: 4px;\n}\n\n/* ============================================================\n   Main layout\n   ============================================================ */\nmain {\n\tmax-width: 980px;\n\tmargin: 0 auto;\n\tpadding: 0 1.5rem 5rem;\n\tdisplay: flex;\n\tflex-direction: column;\n\tgap: 4rem;\n}\n\n/* ============================================================\n   Glass card utility\n   ============================================================ */\n.glass-card {\n\tbackground: var(--surface);\n\tborder: 1px solid var(--border);\n\tborder-radius: var(--radius-md);\n\tbackdrop-filter: blur(20px);\n\t-webkit-backdrop-filter: blur(20px);\n}\n\n/* ============================================================\n   Section header\n   ============================================================ */\n.section-header {\n\tmargin-bottom: 1.5rem;\n}\n\n.section-header h2 {\n\tfont-size: 1.5rem;\n\tfont-weight: 700;\n\tletter-spacing: -0.02em;\n\tmargin-bottom: 0.4rem;\n}\n\n.section-desc {\n\tcolor: var(--text-2);\n\tfont-size: 0.9rem;\n}\n\n/* ============================================================\n   Scanner section\n   ============================================================ */\n.scanner-card {\n\toverflow: hidden;\n}\n\n.video-wrapper {\n\tposition: relative;\n\tbackground: #000;\n\tborder-radius: var(--radius-md) var(--radius-md) 0 0;\n\toverflow: hidden;\n\taspect-ratio: 4/3;\n\tmax-height: 520px;\n\ttransition: box-shadow 0.25s ease;\n}\n\n.video-wrapper.detected {\n\tbox-shadow: 0 0 0 3px var(--success), 0 0 48px rgba(74, 222, 128, 0.25);\n}\n\n#barcodecamera {\n\twidth: 100%;\n\theight: 100%;\n\tobject-fit: cover;\n\tdisplay: block;\n\tborder-radius: 0;\n}\n\n/* Scan overlay */\n.scan-overlay {\n\tposition: absolute;\n\tinset: 0;\n\tpointer-events: none;\n}\n\n/* Animated scan line */\n.scan-line {\n\tposition: absolute;\n\tleft: 5%;\n\tright: 5%;\n\theight: 2px;\n\tbackground: linear-gradient(90deg, transparent, var(--accent-1), var(--accent-2), transparent);\n\ttop: 10%;\n\tborder-radius: 1px;\n\topacity: 0;\n}\n\n.scan-overlay.is-active .scan-line {\n\tanimation: scanMove 2.6s ease-in-out infinite;\n}\n\n@keyframes scanMove {\n\t0%   { top: 8%;  opacity: 0; }\n\t8%   { opacity: 1; }\n\t92%  { opacity: 1; }\n\t100% { top: 88%; opacity: 0; }\n}\n\n/* Corner brackets */\n.scan-corners {\n\tposition: absolute;\n\tinset: 12%;\n}\n\n.scan-corners span {\n\tposition: absolute;\n\twidth: 22px;\n\theight: 22px;\n\tborder-color: var(--accent-1);\n\tborder-style: solid;\n\topacity: 0;\n\ttransition: opacity 0.4s ease;\n}\n\n.scan-overlay.is-active .scan-corners span {\n\topacity: 0.7;\n}\n\n.scan-corners span:nth-child(1) { top: 0; left: 0;  border-width: 2px 0 0 2px; border-radius: 3px 0 0 0; }\n.scan-corners span:nth-child(2) { top: 0; right: 0; border-width: 2px 2px 0 0; border-radius: 0 3px 0 0; }\n.scan-corners span:nth-child(3) { bottom: 0; left: 0;  border-width: 0 0 2px 2px; border-radius: 0 0 0 3px; }\n.scan-corners span:nth-child(4) { bottom: 0; right: 0; border-width: 0 2px 2px 0; border-radius: 0 0 3px 0; }\n\n/* Status badge */\n.status-badge {\n\tposition: absolute;\n\tbottom: 1rem;\n\tleft: 50%;\n\ttransform: translateX(-50%);\n\tfont-size: 0.75rem;\n\tfont-weight: 600;\n\tletter-spacing: 0.04em;\n\tcolor: var(--text-1);\n\tbackground: rgba(8, 8, 15, 0.7);\n\tborder: 1px solid var(--border);\n\tborder-radius: 999px;\n\tpadding: 0.35em 1em;\n\twhite-space: nowrap;\n\tbackdrop-filter: blur(8px);\n\t-webkit-backdrop-filter: blur(8px);\n}\n\n/* Controls */\n.scanner-controls {\n\tdisplay: flex;\n\tflex-direction: column;\n\talign-items: center;\n\tgap: 0.75rem;\n\tpadding: 1.25rem 1.5rem;\n}\n\n/* ============================================================\n   Button\n   ============================================================ */\n.btn {\n\tdisplay: inline-flex;\n\talign-items: center;\n\tgap: 0.5rem;\n\tpadding: 0.65rem 1.5rem;\n\tborder: none;\n\tborder-radius: var(--radius-sm);\n\tfont-family: var(--font);\n\tfont-size: 0.9rem;\n\tfont-weight: 600;\n\tcursor: pointer;\n\ttransition: opacity 0.2s ease, transform 0.15s ease;\n\ttext-decoration: none;\n}\n\n.btn--primary {\n\tbackground: linear-gradient(135deg, var(--accent-1) 0%, var(--accent-2) 100%);\n\tcolor: #fff;\n}\n\n.btn--primary:hover {\n\topacity: 0.88;\n\ttransform: translateY(-1px);\n}\n\n.btn--primary:active {\n\ttransform: translateY(0);\n\topacity: 0.95;\n}\n\n.btn:disabled {\n\topacity: 0.4;\n\tcursor: not-allowed;\n\ttransform: none;\n}\n\n/* Compat warning */\n.compat-warning {\n\tdisplay: flex;\n\talign-items: center;\n\tgap: 0.5rem;\n\tfont-size: 0.8rem;\n\tcolor: var(--warning);\n\tbackground: rgba(251, 191, 36, 0.08);\n\tborder: 1px solid rgba(251, 191, 36, 0.2);\n\tborder-radius: var(--radius-sm);\n\tpadding: 0.6rem 1rem;\n\tmax-width: 420px;\n\ttext-align: left;\n}\n\n/* ============================================================\n   Sample barcodes — bento grid\n   ============================================================ */\n.bento-grid {\n\tdisplay: grid;\n\tgrid-template-columns: repeat(auto-fill, minmax(180px, 1fr));\n\tgap: 1rem;\n}\n\n.sample-card {\n\tpadding: 1.25rem 1rem 1rem;\n\tdisplay: flex;\n\tflex-direction: column;\n\talign-items: center;\n\tgap: 0.5rem;\n\ttransition: border-color 0.2s ease, background 0.2s ease;\n}\n\n.sample-card:hover {\n\tbackground: var(--surface-2);\n\tborder-color: var(--border-2);\n}\n\n.sample-card h3 {\n\tfont-size: 0.8rem;\n\tfont-weight: 700;\n\tletter-spacing: 0.06em;\n\ttext-transform: uppercase;\n\tcolor: var(--accent-1);\n\talign-self: flex-start;\n}\n\n.sample-value {\n\tfont-family: var(--font-mono);\n\tfont-size: 0.65rem;\n\tcolor: var(--text-3);\n\tword-break: break-all;\n\ttext-align: center;\n\tline-height: 1.4;\n\talign-self: flex-start;\n}\n\n.sample-canvas-wrap {\n\twidth: 100%;\n\tdisplay: flex;\n\tjustify-content: center;\n\talign-items: center;\n\tmargin-top: 0.5rem;\n}\n\n.sample-canvas-wrap canvas,\n.sample-canvas-wrap svg {\n\tmax-width: 100%;\n\theight: auto;\n}\n\n/* ============================================================\n   Code section\n   ============================================================ */\n.code-card {\n\tposition: relative;\n\toverflow: hidden;\n}\n\n.code-card__header {\n\tdisplay: flex;\n\talign-items: center;\n\tjustify-content: space-between;\n\tpadding: 0.75rem 1.25rem;\n\tborder-bottom: 1px solid var(--border);\n\tbackground: rgba(255, 255, 255, 0.02);\n}\n\n.code-lang {\n\tfont-size: 0.7rem;\n\tfont-weight: 700;\n\tletter-spacing: 0.1em;\n\ttext-transform: uppercase;\n\tcolor: var(--text-3);\n}\n\n.copy-btn {\n\tdisplay: inline-flex;\n\talign-items: center;\n\tgap: 0.4rem;\n\tfont-size: 0.78rem;\n\tfont-weight: 600;\n\tfont-family: var(--font);\n\tcolor: var(--text-2);\n\tbackground: var(--surface-2);\n\tborder: 1px solid var(--border);\n\tborder-radius: 6px;\n\tpadding: 0.35em 0.75em;\n\tcursor: pointer;\n\ttransition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;\n}\n\n.copy-btn:hover {\n\tcolor: var(--text-1);\n\tbackground: rgba(255, 255, 255, 0.1);\n\tborder-color: var(--border-2);\n}\n\n.copy-btn.copied {\n\tcolor: var(--success);\n\tborder-color: rgba(74, 222, 128, 0.3);\n}\n\n.code-card pre {\n\toverflow-x: auto;\n\tpadding: 1.5rem;\n}\n\n.code-card code {\n\tfont-family: var(--font-mono);\n\tfont-size: 0.8rem;\n\tline-height: 1.75;\n\tcolor: var(--text-1);\n\twhite-space: pre;\n\tdisplay: block;\n}\n\n/* ============================================================\n   About grid\n   ============================================================ */\n.about-grid {\n\tdisplay: grid;\n\tgrid-template-columns: repeat(auto-fill, minmax(200px, 1fr));\n\tgap: 1rem;\n}\n\n.about-card {\n\tpadding: 1.5rem 1.25rem;\n\tdisplay: flex;\n\tflex-direction: column;\n\tgap: 0.6rem;\n}\n\n.about-card__icon {\n\tfont-size: 1.5rem;\n\tline-height: 1;\n}\n\n.about-card h3 {\n\tfont-size: 0.95rem;\n\tfont-weight: 700;\n}\n\n.about-card p {\n\tfont-size: 0.85rem;\n\tcolor: var(--text-2);\n\tline-height: 1.6;\n}\n\n/* ============================================================\n   Footer\n   ============================================================ */\n.site-footer {\n\ttext-align: center;\n\tpadding: 2rem 1.5rem 3rem;\n\tfont-size: 0.8rem;\n\tcolor: var(--text-3);\n}\n\n.site-footer a {\n\tcolor: var(--accent-1);\n\ttext-decoration: none;\n}\n\n.site-footer a:hover {\n\ttext-decoration: underline;\n}\n\n/* ============================================================\n   Snackbar\n   ============================================================ */\n.snackbar {\n\tposition: fixed;\n\tbottom: 2rem;\n\tleft: 50%;\n\ttransform: translateX(-50%) translateY(200%);\n\ttransition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);\n\tz-index: 100;\n\tmin-width: 280px;\n\tmax-width: min(480px, calc(100vw - 2rem));\n\tbackground: rgba(14, 14, 26, 0.95);\n\tbackdrop-filter: blur(24px);\n\t-webkit-backdrop-filter: blur(24px);\n\tborder: 1px solid rgba(129, 140, 248, 0.25);\n\tborder-radius: var(--radius-md);\n\tbox-shadow:\n\t\t0 8px 32px rgba(0, 0, 0, 0.5),\n\t\t0 0 40px rgba(129, 140, 248, 0.08);\n\toverflow: hidden;\n}\n\n.snackbar.is-visible {\n\ttransform: translateX(-50%) translateY(0);\n}\n\n.snackbar__content {\n\tdisplay: flex;\n\talign-items: center;\n\tgap: 0.75rem;\n\tpadding: 0.9rem 1.25rem 0.75rem;\n}\n\n.snackbar__badge {\n\tflex-shrink: 0;\n\tfont-size: 0.62rem;\n\tfont-weight: 800;\n\ttext-transform: uppercase;\n\tletter-spacing: 0.07em;\n\tpadding: 0.22em 0.6em;\n\tborder-radius: 5px;\n\tbackground: linear-gradient(135deg, var(--accent-1), var(--accent-2));\n\tcolor: #fff;\n\twhite-space: nowrap;\n}\n\n.snackbar__value {\n\tfont-family: var(--font-mono);\n\tfont-size: 0.88rem;\n\tcolor: var(--text-1);\n\toverflow: hidden;\n\ttext-overflow: ellipsis;\n\twhite-space: nowrap;\n\tflex: 1;\n}\n\n.snackbar__progress {\n\theight: 3px;\n\tbackground: linear-gradient(90deg, var(--accent-1), var(--accent-2));\n\ttransform-origin: left center;\n\ttransform: scaleX(1);\n}\n\n.snackbar.is-visible .snackbar__progress {\n\tanimation: progressShrink 4s linear forwards;\n}\n\n@keyframes progressShrink {\n\tto { transform: scaleX(0); }\n}\n\n/* ============================================================\n   Responsive\n   ============================================================ */\n@media (max-width: 640px) {\n\t.hero {\n\t\tpadding: 3.5rem 1rem 2rem;\n\t}\n\n\t.video-wrapper {\n\t\taspect-ratio: 3/4;\n\t\tmax-height: 420px;\n\t}\n\n\t.bento-grid {\n\t\tgrid-template-columns: repeat(2, 1fr);\n\t}\n\n\t.about-grid {\n\t\tgrid-template-columns: 1fr 1fr;\n\t}\n\n\t.snackbar {\n\t\tbottom: 1rem;\n\t}\n}\n\n@media (max-width: 400px) {\n\t.bento-grid {\n\t\tgrid-template-columns: 1fr;\n\t}\n\n\t.about-grid {\n\t\tgrid-template-columns: 1fr;\n\t}\n}\n"],"sourceRoot":""}]);
+___CSS_LOADER_EXPORT___.push([module.id, "/* ============================================================\n   Design tokens\n   ============================================================ */\n:root {\n\t--bg:          #08080f;\n\t--bg-2:        #0e0e1a;\n\t--surface:     rgba(255, 255, 255, 0.04);\n\t--surface-2:   rgba(255, 255, 255, 0.07);\n\t--border:      rgba(255, 255, 255, 0.08);\n\t--border-2:    rgba(255, 255, 255, 0.14);\n\t--text-1:      #f1f5f9;\n\t--text-2:      #94a3b8;\n\t--text-3:      #64748b;\n\t--accent-1:    #818cf8;\n\t--accent-2:    #22d3ee;\n\t--success:     #4ade80;\n\t--warning:     #fbbf24;\n\t--radius-sm:   10px;\n\t--radius-md:   18px;\n\t--radius-lg:   26px;\n\t--font:        system-ui, -apple-system, \"Segoe UI\", sans-serif;\n\t--font-mono:   ui-monospace, \"Fira Code\", \"Cascadia Code\", monospace;\n}\n\n/* ============================================================\n   Reset & base\n   ============================================================ */\n*, *::before, *::after {\n\tbox-sizing: border-box;\n\tmargin: 0;\n\tpadding: 0;\n}\n\nhtml {\n\tscroll-behavior: smooth;\n}\n\nbody {\n\tbackground-color: var(--bg);\n\tbackground-image:\n\t\tradial-gradient(ellipse 80% 50% at 50% -20%, rgba(129, 140, 248, 0.12), transparent),\n\t\tradial-gradient(ellipse 60% 40% at 80% 80%,  rgba(34, 211, 238, 0.06),  transparent);\n\tcolor: var(--text-1);\n\tfont-family: var(--font);\n\tmin-height: 100vh;\n\tline-height: 1.6;\n\t-webkit-font-smoothing: antialiased;\n}\n\n/* ============================================================\n   Hero header\n   ============================================================ */\n.hero {\n\tpadding: 5rem 1.5rem 3rem;\n\ttext-align: center;\n}\n\n.hero__inner {\n\tmax-width: 640px;\n\tmargin: 0 auto;\n}\n\n.hero__badge {\n\tdisplay: inline-block;\n\tfont-size: 0.7rem;\n\tfont-weight: 700;\n\tletter-spacing: 0.1em;\n\ttext-transform: uppercase;\n\tcolor: var(--accent-1);\n\tborder: 1px solid rgba(129, 140, 248, 0.3);\n\tborder-radius: 999px;\n\tpadding: 0.3em 0.9em;\n\tmargin-bottom: 1.25rem;\n\tbackground: rgba(129, 140, 248, 0.08);\n}\n\n.hero__title {\n\tfont-size: clamp(2rem, 6vw, 3.5rem);\n\tfont-weight: 800;\n\tletter-spacing: -0.03em;\n\tline-height: 1.1;\n\tmargin-bottom: 1rem;\n}\n\n.gradient-text {\n\tbackground: linear-gradient(135deg, var(--accent-1) 0%, var(--accent-2) 100%);\n\t-webkit-background-clip: text;\n\t-webkit-text-fill-color: transparent;\n\tbackground-clip: text;\n}\n\n.hero__subtitle {\n\tfont-size: 1rem;\n\tcolor: var(--text-2);\n\tmax-width: 480px;\n\tmargin: 0 auto;\n}\n\n.hero__subtitle code {\n\tfont-family: var(--font-mono);\n\tfont-size: 0.9em;\n\tcolor: var(--accent-1);\n\tbackground: rgba(129, 140, 248, 0.1);\n\tpadding: 0.1em 0.4em;\n\tborder-radius: 4px;\n}\n\n/* ============================================================\n   Main layout\n   ============================================================ */\nmain {\n\tmax-width: 980px;\n\tmargin: 0 auto;\n\tpadding: 0 1.5rem 5rem;\n\tdisplay: flex;\n\tflex-direction: column;\n\tgap: 4rem;\n}\n\n/* ============================================================\n   Glass card utility\n   ============================================================ */\n.glass-card {\n\tbackground: var(--surface);\n\tborder: 1px solid var(--border);\n\tborder-radius: var(--radius-md);\n\tbackdrop-filter: blur(20px);\n\t-webkit-backdrop-filter: blur(20px);\n}\n\n/* ============================================================\n   Section header\n   ============================================================ */\n.section-header {\n\tmargin-bottom: 1.5rem;\n}\n\n.section-header h2 {\n\tfont-size: 1.5rem;\n\tfont-weight: 700;\n\tletter-spacing: -0.02em;\n\tmargin-bottom: 0.4rem;\n}\n\n.section-desc {\n\tcolor: var(--text-2);\n\tfont-size: 0.9rem;\n}\n\n/* ============================================================\n   Scanner section\n   ============================================================ */\n.scanner-card {\n\toverflow: hidden;\n}\n\n.video-wrapper {\n\tposition: relative;\n\tbackground: #000;\n\tborder-radius: var(--radius-md) var(--radius-md) 0 0;\n\toverflow: hidden;\n\taspect-ratio: 4/3;\n\tmax-height: 520px;\n\ttransition: box-shadow 0.25s ease;\n}\n\n.video-wrapper.detected {\n\tanimation: detectedFlash 0.65s ease-out forwards;\n}\n\n@keyframes detectedFlash {\n\t0%   {\n\t\tbox-shadow:\n\t\t\t0 0 0 4px var(--success),\n\t\t\t0 0 0 8px rgba(74, 222, 128, 0.4),\n\t\t\tinset 0 0 40px rgba(74, 222, 128, 0.18);\n\t}\n\t30%  {\n\t\tbox-shadow:\n\t\t\t0 0 0 6px var(--success),\n\t\t\t0 0 0 16px rgba(74, 222, 128, 0.25),\n\t\t\tinset 0 0 60px rgba(74, 222, 128, 0.28);\n\t}\n\t100% {\n\t\tbox-shadow:\n\t\t\t0 0 0 2px rgba(74, 222, 128, 0.2),\n\t\t\t0 0 0 4px transparent,\n\t\t\tinset 0 0 0px transparent;\n\t}\n}\n\n#barcodecamera {\n\twidth: 100%;\n\theight: 100%;\n\tobject-fit: cover;\n\tdisplay: block;\n\tborder-radius: 0;\n}\n\n/* Scan overlay */\n.scan-overlay {\n\tposition: absolute;\n\tinset: 0;\n\tpointer-events: none;\n}\n\n/* Animated scan line */\n.scan-line {\n\tposition: absolute;\n\tleft: 5%;\n\tright: 5%;\n\theight: 2px;\n\tbackground: linear-gradient(90deg, transparent, var(--accent-1), var(--accent-2), transparent);\n\ttop: 10%;\n\tborder-radius: 1px;\n\topacity: 0;\n}\n\n.scan-overlay.is-active .scan-line {\n\tanimation: scanMove 2.6s ease-in-out infinite;\n}\n\n@keyframes scanMove {\n\t0%   { top: 8%;  opacity: 0; }\n\t8%   { opacity: 1; }\n\t92%  { opacity: 1; }\n\t100% { top: 88%; opacity: 0; }\n}\n\n/* Corner brackets */\n.scan-corners {\n\tposition: absolute;\n\tinset: 12%;\n}\n\n.scan-corners span {\n\tposition: absolute;\n\twidth: 22px;\n\theight: 22px;\n\tborder-color: var(--accent-1);\n\tborder-style: solid;\n\topacity: 0;\n\ttransition: opacity 0.4s ease;\n}\n\n.scan-overlay.is-active .scan-corners span {\n\topacity: 0.7;\n}\n\n.scan-corners span:nth-child(1) { top: 0; left: 0;  border-width: 2px 0 0 2px; border-radius: 3px 0 0 0; }\n.scan-corners span:nth-child(2) { top: 0; right: 0; border-width: 2px 2px 0 0; border-radius: 0 3px 0 0; }\n.scan-corners span:nth-child(3) { bottom: 0; left: 0;  border-width: 0 0 2px 2px; border-radius: 0 0 0 3px; }\n.scan-corners span:nth-child(4) { bottom: 0; right: 0; border-width: 0 2px 2px 0; border-radius: 0 0 3px 0; }\n\n/* Status badge */\n.status-badge {\n\tposition: absolute;\n\tbottom: 1rem;\n\tleft: 50%;\n\ttransform: translateX(-50%);\n\tfont-size: 0.75rem;\n\tfont-weight: 600;\n\tletter-spacing: 0.04em;\n\tcolor: var(--text-1);\n\tbackground: rgba(8, 8, 15, 0.7);\n\tborder: 1px solid var(--border);\n\tborder-radius: 999px;\n\tpadding: 0.35em 1em;\n\twhite-space: nowrap;\n\tbackdrop-filter: blur(8px);\n\t-webkit-backdrop-filter: blur(8px);\n}\n\n/* Controls */\n.scanner-controls {\n\tdisplay: flex;\n\tflex-direction: column;\n\talign-items: center;\n\tgap: 0.75rem;\n\tpadding: 1.25rem 1.5rem;\n}\n\n/* ============================================================\n   Button\n   ============================================================ */\n.btn {\n\tdisplay: inline-flex;\n\talign-items: center;\n\tgap: 0.5rem;\n\tpadding: 0.65rem 1.5rem;\n\tborder: none;\n\tborder-radius: var(--radius-sm);\n\tfont-family: var(--font);\n\tfont-size: 0.9rem;\n\tfont-weight: 600;\n\tcursor: pointer;\n\ttransition: opacity 0.2s ease, transform 0.15s ease;\n\ttext-decoration: none;\n}\n\n.btn--primary {\n\tbackground: linear-gradient(135deg, var(--accent-1) 0%, var(--accent-2) 100%);\n\tcolor: #fff;\n}\n\n.btn--primary:hover {\n\topacity: 0.88;\n\ttransform: translateY(-1px);\n}\n\n.btn--primary:active {\n\ttransform: translateY(0);\n\topacity: 0.95;\n}\n\n.btn:disabled {\n\topacity: 0.4;\n\tcursor: not-allowed;\n\ttransform: none;\n}\n\n/* Compat warning */\n.compat-warning {\n\tdisplay: flex;\n\talign-items: center;\n\tgap: 0.5rem;\n\tfont-size: 0.8rem;\n\tcolor: var(--warning);\n\tbackground: rgba(251, 191, 36, 0.08);\n\tborder: 1px solid rgba(251, 191, 36, 0.2);\n\tborder-radius: var(--radius-sm);\n\tpadding: 0.6rem 1rem;\n\tmax-width: 420px;\n\ttext-align: left;\n}\n\n/* ============================================================\n   Sample barcodes — bento grid\n   ============================================================ */\n.bento-grid {\n\tdisplay: grid;\n\tgrid-template-columns: repeat(auto-fill, minmax(180px, 1fr));\n\tgap: 1rem;\n}\n\n.sample-card {\n\tpadding: 1.25rem 1rem 1rem;\n\tdisplay: flex;\n\tflex-direction: column;\n\talign-items: center;\n\tgap: 0.5rem;\n\ttransition: border-color 0.2s ease, background 0.2s ease;\n}\n\n.sample-card:hover {\n\tbackground: var(--surface-2);\n\tborder-color: var(--border-2);\n}\n\n.sample-card h3 {\n\tfont-size: 0.8rem;\n\tfont-weight: 700;\n\tletter-spacing: 0.06em;\n\ttext-transform: uppercase;\n\tcolor: var(--accent-1);\n\talign-self: flex-start;\n}\n\n.sample-value {\n\tfont-family: var(--font-mono);\n\tfont-size: 0.65rem;\n\tcolor: var(--text-3);\n\tword-break: break-all;\n\ttext-align: center;\n\tline-height: 1.4;\n\talign-self: flex-start;\n}\n\n.sample-canvas-wrap {\n\twidth: 100%;\n\tdisplay: flex;\n\tjustify-content: center;\n\talign-items: center;\n\tmargin-top: 0.5rem;\n}\n\n.sample-canvas-wrap canvas,\n.sample-canvas-wrap svg {\n\tmax-width: 100%;\n\theight: auto;\n}\n\n/* ============================================================\n   Code section\n   ============================================================ */\n.code-card {\n\tposition: relative;\n\toverflow: hidden;\n}\n\n.code-card__header {\n\tdisplay: flex;\n\talign-items: center;\n\tjustify-content: space-between;\n\tpadding: 0.75rem 1.25rem;\n\tborder-bottom: 1px solid var(--border);\n\tbackground: rgba(255, 255, 255, 0.02);\n}\n\n.code-lang {\n\tfont-size: 0.7rem;\n\tfont-weight: 700;\n\tletter-spacing: 0.1em;\n\ttext-transform: uppercase;\n\tcolor: var(--text-3);\n}\n\n.copy-btn {\n\tdisplay: inline-flex;\n\talign-items: center;\n\tgap: 0.4rem;\n\tfont-size: 0.78rem;\n\tfont-weight: 600;\n\tfont-family: var(--font);\n\tcolor: var(--text-2);\n\tbackground: var(--surface-2);\n\tborder: 1px solid var(--border);\n\tborder-radius: 6px;\n\tpadding: 0.35em 0.75em;\n\tcursor: pointer;\n\ttransition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;\n}\n\n.copy-btn:hover {\n\tcolor: var(--text-1);\n\tbackground: rgba(255, 255, 255, 0.1);\n\tborder-color: var(--border-2);\n}\n\n.copy-btn.copied {\n\tcolor: var(--success);\n\tborder-color: rgba(74, 222, 128, 0.3);\n}\n\n.code-card pre {\n\toverflow-x: auto;\n\tpadding: 1.5rem;\n}\n\n.code-card code {\n\tfont-family: var(--font-mono);\n\tfont-size: 0.8rem;\n\tline-height: 1.75;\n\tcolor: var(--text-1);\n\twhite-space: pre;\n\tdisplay: block;\n}\n\n/* ============================================================\n   About grid\n   ============================================================ */\n.about-grid {\n\tdisplay: grid;\n\tgrid-template-columns: repeat(auto-fill, minmax(200px, 1fr));\n\tgap: 1rem;\n}\n\n.about-card {\n\tpadding: 1.5rem 1.25rem;\n\tdisplay: flex;\n\tflex-direction: column;\n\tgap: 0.6rem;\n}\n\n.about-card__icon {\n\tfont-size: 1.5rem;\n\tline-height: 1;\n}\n\n.about-card h3 {\n\tfont-size: 0.95rem;\n\tfont-weight: 700;\n}\n\n.about-card p {\n\tfont-size: 0.85rem;\n\tcolor: var(--text-2);\n\tline-height: 1.6;\n}\n\n/* ============================================================\n   Footer\n   ============================================================ */\n.site-footer {\n\ttext-align: center;\n\tpadding: 2rem 1.5rem 3rem;\n\tfont-size: 0.8rem;\n\tcolor: var(--text-3);\n}\n\n.site-footer a {\n\tcolor: var(--accent-1);\n\ttext-decoration: none;\n}\n\n.site-footer a:hover {\n\ttext-decoration: underline;\n}\n\n/* ============================================================\n   Snackbar\n   ============================================================ */\n.snackbar {\n\tposition: fixed;\n\tbottom: 2rem;\n\tleft: 50%;\n\ttransform: translateX(-50%) translateY(200%);\n\ttransition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);\n\tz-index: 100;\n\tmin-width: 280px;\n\tmax-width: min(480px, calc(100vw - 2rem));\n\tbackground: rgba(14, 14, 26, 0.95);\n\tbackdrop-filter: blur(24px);\n\t-webkit-backdrop-filter: blur(24px);\n\tborder: 1px solid rgba(129, 140, 248, 0.25);\n\tborder-radius: var(--radius-md);\n\tbox-shadow:\n\t\t0 8px 32px rgba(0, 0, 0, 0.5),\n\t\t0 0 40px rgba(129, 140, 248, 0.08);\n\toverflow: hidden;\n}\n\n.snackbar.is-visible {\n\ttransform: translateX(-50%) translateY(0);\n}\n\n.snackbar__content {\n\tdisplay: flex;\n\talign-items: center;\n\tgap: 0.75rem;\n\tpadding: 0.9rem 1.25rem 0.75rem;\n}\n\n.snackbar__badge {\n\tflex-shrink: 0;\n\tfont-size: 0.62rem;\n\tfont-weight: 800;\n\ttext-transform: uppercase;\n\tletter-spacing: 0.07em;\n\tpadding: 0.22em 0.6em;\n\tborder-radius: 5px;\n\tbackground: linear-gradient(135deg, var(--accent-1), var(--accent-2));\n\tcolor: #fff;\n\twhite-space: nowrap;\n}\n\n.snackbar__value {\n\tfont-family: var(--font-mono);\n\tfont-size: 0.88rem;\n\tcolor: var(--text-1);\n\toverflow: hidden;\n\ttext-overflow: ellipsis;\n\twhite-space: nowrap;\n\tflex: 1;\n}\n\n.snackbar__progress {\n\theight: 3px;\n\tbackground: linear-gradient(90deg, var(--accent-1), var(--accent-2));\n\ttransform-origin: left center;\n\ttransform: scaleX(1);\n}\n\n.snackbar.is-visible .snackbar__progress {\n\tanimation: progressShrink 4s linear forwards;\n}\n\n@keyframes progressShrink {\n\tto { transform: scaleX(0); }\n}\n\n/* ============================================================\n   Browser compatibility section\n   ============================================================ */\n.compat-grid {\n\tdisplay: grid;\n\tgrid-template-columns: repeat(auto-fill, minmax(200px, 1fr));\n\tgap: 1rem;\n\tmargin-bottom: 1.5rem;\n}\n\n.compat-card {\n\tpadding: 1.25rem;\n\tdisplay: flex;\n\tflex-direction: column;\n\tgap: 0.5rem;\n}\n\n.compat-card__browser {\n\tdisplay: flex;\n\talign-items: center;\n\tgap: 0.6rem;\n\tfont-weight: 700;\n\tfont-size: 0.95rem;\n}\n\n.browser-icon {\n\twidth: 22px;\n\theight: 22px;\n\tflex-shrink: 0;\n\tcolor: var(--text-2);\n}\n\n.compat-card p {\n\tfont-size: 0.78rem;\n\tcolor: var(--text-3);\n\tline-height: 1.4;\n}\n\n.compat-badge {\n\tdisplay: inline-block;\n\tfont-size: 0.7rem;\n\tfont-weight: 700;\n\tletter-spacing: 0.05em;\n\tpadding: 0.25em 0.7em;\n\tborder-radius: 999px;\n\talign-self: flex-start;\n}\n\n.compat-badge--yes {\n\tbackground: rgba(74, 222, 128, 0.12);\n\tcolor: var(--success);\n\tborder: 1px solid rgba(74, 222, 128, 0.25);\n}\n\n.compat-badge--no {\n\tbackground: rgba(248, 113, 113, 0.1);\n\tcolor: #f87171;\n\tborder: 1px solid rgba(248, 113, 113, 0.2);\n}\n\n.compat-card--yes {\n\tborder-color: rgba(74, 222, 128, 0.12);\n}\n\n.compat-card--no {\n\tborder-color: rgba(248, 113, 113, 0.08);\n\topacity: 0.8;\n}\n\n/* Device/browser table */\n.device-table-wrap {\n\tpadding: 1.5rem;\n\toverflow-x: auto;\n}\n\n.device-table {\n\twidth: 100%;\n\tborder-collapse: collapse;\n\tfont-size: 0.85rem;\n\tmin-width: 380px;\n}\n\n.device-table th,\n.device-table td {\n\tpadding: 0.7rem 1rem;\n\ttext-align: center;\n\tborder-bottom: 1px solid var(--border);\n}\n\n.device-table th {\n\tfont-weight: 700;\n\tfont-size: 0.75rem;\n\tletter-spacing: 0.05em;\n\ttext-transform: uppercase;\n\tcolor: var(--text-2);\n}\n\n.device-table th:first-child,\n.device-table td:first-child {\n\ttext-align: left;\n}\n\n.device-table tbody tr:last-child td {\n\tborder-bottom: none;\n}\n\n.td-yes  { color: var(--success); font-weight: 700; }\n.td-no   { color: #f87171; font-weight: 700; }\n.td-na   { color: var(--text-3); }\n\n.device-table__note {\n\tmargin-top: 1rem;\n\tfont-size: 0.75rem;\n\tcolor: var(--text-3);\n\tline-height: 1.6;\n\tborder-top: 1px solid var(--border);\n\tpadding-top: 0.75rem;\n}\n\n/* ============================================================\n   PWA install banner\n   ============================================================ */\n.install-banner {\n\tdisplay: flex;\n\talign-items: center;\n\tgap: 1rem;\n\tpadding: 1rem 1.25rem;\n\tflex-wrap: wrap;\n}\n\n.install-banner__icon img {\n\tborder-radius: var(--radius-sm);\n\tdisplay: block;\n}\n\n.install-banner__text {\n\tflex: 1;\n\tmin-width: 180px;\n}\n\n.install-banner__text strong {\n\tdisplay: block;\n\tfont-size: 0.9rem;\n\tmargin-bottom: 0.15rem;\n}\n\n.install-banner__text p {\n\tfont-size: 0.8rem;\n\tcolor: var(--text-2);\n}\n\n.install-banner__btn {\n\tflex-shrink: 0;\n\tfont-size: 0.85rem;\n\tpadding: 0.55rem 1.2rem;\n}\n\n/* ============================================================\n   Responsive\n   ============================================================ */\n@media (max-width: 640px) {\n\t.hero {\n\t\tpadding: 3.5rem 1rem 2rem;\n\t}\n\n\t.video-wrapper {\n\t\taspect-ratio: 3/4;\n\t\tmax-height: 420px;\n\t}\n\n\t.bento-grid {\n\t\tgrid-template-columns: repeat(2, 1fr);\n\t}\n\n\t.about-grid {\n\t\tgrid-template-columns: 1fr 1fr;\n\t}\n\n\t.snackbar {\n\t\tbottom: 1rem;\n\t}\n}\n\n@media (max-width: 400px) {\n\t.bento-grid {\n\t\tgrid-template-columns: 1fr;\n\t}\n\n\t.about-grid {\n\t\tgrid-template-columns: 1fr;\n\t}\n}\n", "",{"version":3,"sources":["webpack://./src/styles/main.css"],"names":[],"mappings":"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","sourcesContent":["/* ============================================================\n   Design tokens\n   ============================================================ */\n:root {\n\t--bg:          #08080f;\n\t--bg-2:        #0e0e1a;\n\t--surface:     rgba(255, 255, 255, 0.04);\n\t--surface-2:   rgba(255, 255, 255, 0.07);\n\t--border:      rgba(255, 255, 255, 0.08);\n\t--border-2:    rgba(255, 255, 255, 0.14);\n\t--text-1:      #f1f5f9;\n\t--text-2:      #94a3b8;\n\t--text-3:      #64748b;\n\t--accent-1:    #818cf8;\n\t--accent-2:    #22d3ee;\n\t--success:     #4ade80;\n\t--warning:     #fbbf24;\n\t--radius-sm:   10px;\n\t--radius-md:   18px;\n\t--radius-lg:   26px;\n\t--font:        system-ui, -apple-system, \"Segoe UI\", sans-serif;\n\t--font-mono:   ui-monospace, \"Fira Code\", \"Cascadia Code\", monospace;\n}\n\n/* ============================================================\n   Reset & base\n   ============================================================ */\n*, *::before, *::after {\n\tbox-sizing: border-box;\n\tmargin: 0;\n\tpadding: 0;\n}\n\nhtml {\n\tscroll-behavior: smooth;\n}\n\nbody {\n\tbackground-color: var(--bg);\n\tbackground-image:\n\t\tradial-gradient(ellipse 80% 50% at 50% -20%, rgba(129, 140, 248, 0.12), transparent),\n\t\tradial-gradient(ellipse 60% 40% at 80% 80%,  rgba(34, 211, 238, 0.06),  transparent);\n\tcolor: var(--text-1);\n\tfont-family: var(--font);\n\tmin-height: 100vh;\n\tline-height: 1.6;\n\t-webkit-font-smoothing: antialiased;\n}\n\n/* ============================================================\n   Hero header\n   ============================================================ */\n.hero {\n\tpadding: 5rem 1.5rem 3rem;\n\ttext-align: center;\n}\n\n.hero__inner {\n\tmax-width: 640px;\n\tmargin: 0 auto;\n}\n\n.hero__badge {\n\tdisplay: inline-block;\n\tfont-size: 0.7rem;\n\tfont-weight: 700;\n\tletter-spacing: 0.1em;\n\ttext-transform: uppercase;\n\tcolor: var(--accent-1);\n\tborder: 1px solid rgba(129, 140, 248, 0.3);\n\tborder-radius: 999px;\n\tpadding: 0.3em 0.9em;\n\tmargin-bottom: 1.25rem;\n\tbackground: rgba(129, 140, 248, 0.08);\n}\n\n.hero__title {\n\tfont-size: clamp(2rem, 6vw, 3.5rem);\n\tfont-weight: 800;\n\tletter-spacing: -0.03em;\n\tline-height: 1.1;\n\tmargin-bottom: 1rem;\n}\n\n.gradient-text {\n\tbackground: linear-gradient(135deg, var(--accent-1) 0%, var(--accent-2) 100%);\n\t-webkit-background-clip: text;\n\t-webkit-text-fill-color: transparent;\n\tbackground-clip: text;\n}\n\n.hero__subtitle {\n\tfont-size: 1rem;\n\tcolor: var(--text-2);\n\tmax-width: 480px;\n\tmargin: 0 auto;\n}\n\n.hero__subtitle code {\n\tfont-family: var(--font-mono);\n\tfont-size: 0.9em;\n\tcolor: var(--accent-1);\n\tbackground: rgba(129, 140, 248, 0.1);\n\tpadding: 0.1em 0.4em;\n\tborder-radius: 4px;\n}\n\n/* ============================================================\n   Main layout\n   ============================================================ */\nmain {\n\tmax-width: 980px;\n\tmargin: 0 auto;\n\tpadding: 0 1.5rem 5rem;\n\tdisplay: flex;\n\tflex-direction: column;\n\tgap: 4rem;\n}\n\n/* ============================================================\n   Glass card utility\n   ============================================================ */\n.glass-card {\n\tbackground: var(--surface);\n\tborder: 1px solid var(--border);\n\tborder-radius: var(--radius-md);\n\tbackdrop-filter: blur(20px);\n\t-webkit-backdrop-filter: blur(20px);\n}\n\n/* ============================================================\n   Section header\n   ============================================================ */\n.section-header {\n\tmargin-bottom: 1.5rem;\n}\n\n.section-header h2 {\n\tfont-size: 1.5rem;\n\tfont-weight: 700;\n\tletter-spacing: -0.02em;\n\tmargin-bottom: 0.4rem;\n}\n\n.section-desc {\n\tcolor: var(--text-2);\n\tfont-size: 0.9rem;\n}\n\n/* ============================================================\n   Scanner section\n   ============================================================ */\n.scanner-card {\n\toverflow: hidden;\n}\n\n.video-wrapper {\n\tposition: relative;\n\tbackground: #000;\n\tborder-radius: var(--radius-md) var(--radius-md) 0 0;\n\toverflow: hidden;\n\taspect-ratio: 4/3;\n\tmax-height: 520px;\n\ttransition: box-shadow 0.25s ease;\n}\n\n.video-wrapper.detected {\n\tanimation: detectedFlash 0.65s ease-out forwards;\n}\n\n@keyframes detectedFlash {\n\t0%   {\n\t\tbox-shadow:\n\t\t\t0 0 0 4px var(--success),\n\t\t\t0 0 0 8px rgba(74, 222, 128, 0.4),\n\t\t\tinset 0 0 40px rgba(74, 222, 128, 0.18);\n\t}\n\t30%  {\n\t\tbox-shadow:\n\t\t\t0 0 0 6px var(--success),\n\t\t\t0 0 0 16px rgba(74, 222, 128, 0.25),\n\t\t\tinset 0 0 60px rgba(74, 222, 128, 0.28);\n\t}\n\t100% {\n\t\tbox-shadow:\n\t\t\t0 0 0 2px rgba(74, 222, 128, 0.2),\n\t\t\t0 0 0 4px transparent,\n\t\t\tinset 0 0 0px transparent;\n\t}\n}\n\n#barcodecamera {\n\twidth: 100%;\n\theight: 100%;\n\tobject-fit: cover;\n\tdisplay: block;\n\tborder-radius: 0;\n}\n\n/* Scan overlay */\n.scan-overlay {\n\tposition: absolute;\n\tinset: 0;\n\tpointer-events: none;\n}\n\n/* Animated scan line */\n.scan-line {\n\tposition: absolute;\n\tleft: 5%;\n\tright: 5%;\n\theight: 2px;\n\tbackground: linear-gradient(90deg, transparent, var(--accent-1), var(--accent-2), transparent);\n\ttop: 10%;\n\tborder-radius: 1px;\n\topacity: 0;\n}\n\n.scan-overlay.is-active .scan-line {\n\tanimation: scanMove 2.6s ease-in-out infinite;\n}\n\n@keyframes scanMove {\n\t0%   { top: 8%;  opacity: 0; }\n\t8%   { opacity: 1; }\n\t92%  { opacity: 1; }\n\t100% { top: 88%; opacity: 0; }\n}\n\n/* Corner brackets */\n.scan-corners {\n\tposition: absolute;\n\tinset: 12%;\n}\n\n.scan-corners span {\n\tposition: absolute;\n\twidth: 22px;\n\theight: 22px;\n\tborder-color: var(--accent-1);\n\tborder-style: solid;\n\topacity: 0;\n\ttransition: opacity 0.4s ease;\n}\n\n.scan-overlay.is-active .scan-corners span {\n\topacity: 0.7;\n}\n\n.scan-corners span:nth-child(1) { top: 0; left: 0;  border-width: 2px 0 0 2px; border-radius: 3px 0 0 0; }\n.scan-corners span:nth-child(2) { top: 0; right: 0; border-width: 2px 2px 0 0; border-radius: 0 3px 0 0; }\n.scan-corners span:nth-child(3) { bottom: 0; left: 0;  border-width: 0 0 2px 2px; border-radius: 0 0 0 3px; }\n.scan-corners span:nth-child(4) { bottom: 0; right: 0; border-width: 0 2px 2px 0; border-radius: 0 0 3px 0; }\n\n/* Status badge */\n.status-badge {\n\tposition: absolute;\n\tbottom: 1rem;\n\tleft: 50%;\n\ttransform: translateX(-50%);\n\tfont-size: 0.75rem;\n\tfont-weight: 600;\n\tletter-spacing: 0.04em;\n\tcolor: var(--text-1);\n\tbackground: rgba(8, 8, 15, 0.7);\n\tborder: 1px solid var(--border);\n\tborder-radius: 999px;\n\tpadding: 0.35em 1em;\n\twhite-space: nowrap;\n\tbackdrop-filter: blur(8px);\n\t-webkit-backdrop-filter: blur(8px);\n}\n\n/* Controls */\n.scanner-controls {\n\tdisplay: flex;\n\tflex-direction: column;\n\talign-items: center;\n\tgap: 0.75rem;\n\tpadding: 1.25rem 1.5rem;\n}\n\n/* ============================================================\n   Button\n   ============================================================ */\n.btn {\n\tdisplay: inline-flex;\n\talign-items: center;\n\tgap: 0.5rem;\n\tpadding: 0.65rem 1.5rem;\n\tborder: none;\n\tborder-radius: var(--radius-sm);\n\tfont-family: var(--font);\n\tfont-size: 0.9rem;\n\tfont-weight: 600;\n\tcursor: pointer;\n\ttransition: opacity 0.2s ease, transform 0.15s ease;\n\ttext-decoration: none;\n}\n\n.btn--primary {\n\tbackground: linear-gradient(135deg, var(--accent-1) 0%, var(--accent-2) 100%);\n\tcolor: #fff;\n}\n\n.btn--primary:hover {\n\topacity: 0.88;\n\ttransform: translateY(-1px);\n}\n\n.btn--primary:active {\n\ttransform: translateY(0);\n\topacity: 0.95;\n}\n\n.btn:disabled {\n\topacity: 0.4;\n\tcursor: not-allowed;\n\ttransform: none;\n}\n\n/* Compat warning */\n.compat-warning {\n\tdisplay: flex;\n\talign-items: center;\n\tgap: 0.5rem;\n\tfont-size: 0.8rem;\n\tcolor: var(--warning);\n\tbackground: rgba(251, 191, 36, 0.08);\n\tborder: 1px solid rgba(251, 191, 36, 0.2);\n\tborder-radius: var(--radius-sm);\n\tpadding: 0.6rem 1rem;\n\tmax-width: 420px;\n\ttext-align: left;\n}\n\n/* ============================================================\n   Sample barcodes — bento grid\n   ============================================================ */\n.bento-grid {\n\tdisplay: grid;\n\tgrid-template-columns: repeat(auto-fill, minmax(180px, 1fr));\n\tgap: 1rem;\n}\n\n.sample-card {\n\tpadding: 1.25rem 1rem 1rem;\n\tdisplay: flex;\n\tflex-direction: column;\n\talign-items: center;\n\tgap: 0.5rem;\n\ttransition: border-color 0.2s ease, background 0.2s ease;\n}\n\n.sample-card:hover {\n\tbackground: var(--surface-2);\n\tborder-color: var(--border-2);\n}\n\n.sample-card h3 {\n\tfont-size: 0.8rem;\n\tfont-weight: 700;\n\tletter-spacing: 0.06em;\n\ttext-transform: uppercase;\n\tcolor: var(--accent-1);\n\talign-self: flex-start;\n}\n\n.sample-value {\n\tfont-family: var(--font-mono);\n\tfont-size: 0.65rem;\n\tcolor: var(--text-3);\n\tword-break: break-all;\n\ttext-align: center;\n\tline-height: 1.4;\n\talign-self: flex-start;\n}\n\n.sample-canvas-wrap {\n\twidth: 100%;\n\tdisplay: flex;\n\tjustify-content: center;\n\talign-items: center;\n\tmargin-top: 0.5rem;\n}\n\n.sample-canvas-wrap canvas,\n.sample-canvas-wrap svg {\n\tmax-width: 100%;\n\theight: auto;\n}\n\n/* ============================================================\n   Code section\n   ============================================================ */\n.code-card {\n\tposition: relative;\n\toverflow: hidden;\n}\n\n.code-card__header {\n\tdisplay: flex;\n\talign-items: center;\n\tjustify-content: space-between;\n\tpadding: 0.75rem 1.25rem;\n\tborder-bottom: 1px solid var(--border);\n\tbackground: rgba(255, 255, 255, 0.02);\n}\n\n.code-lang {\n\tfont-size: 0.7rem;\n\tfont-weight: 700;\n\tletter-spacing: 0.1em;\n\ttext-transform: uppercase;\n\tcolor: var(--text-3);\n}\n\n.copy-btn {\n\tdisplay: inline-flex;\n\talign-items: center;\n\tgap: 0.4rem;\n\tfont-size: 0.78rem;\n\tfont-weight: 600;\n\tfont-family: var(--font);\n\tcolor: var(--text-2);\n\tbackground: var(--surface-2);\n\tborder: 1px solid var(--border);\n\tborder-radius: 6px;\n\tpadding: 0.35em 0.75em;\n\tcursor: pointer;\n\ttransition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;\n}\n\n.copy-btn:hover {\n\tcolor: var(--text-1);\n\tbackground: rgba(255, 255, 255, 0.1);\n\tborder-color: var(--border-2);\n}\n\n.copy-btn.copied {\n\tcolor: var(--success);\n\tborder-color: rgba(74, 222, 128, 0.3);\n}\n\n.code-card pre {\n\toverflow-x: auto;\n\tpadding: 1.5rem;\n}\n\n.code-card code {\n\tfont-family: var(--font-mono);\n\tfont-size: 0.8rem;\n\tline-height: 1.75;\n\tcolor: var(--text-1);\n\twhite-space: pre;\n\tdisplay: block;\n}\n\n/* ============================================================\n   About grid\n   ============================================================ */\n.about-grid {\n\tdisplay: grid;\n\tgrid-template-columns: repeat(auto-fill, minmax(200px, 1fr));\n\tgap: 1rem;\n}\n\n.about-card {\n\tpadding: 1.5rem 1.25rem;\n\tdisplay: flex;\n\tflex-direction: column;\n\tgap: 0.6rem;\n}\n\n.about-card__icon {\n\tfont-size: 1.5rem;\n\tline-height: 1;\n}\n\n.about-card h3 {\n\tfont-size: 0.95rem;\n\tfont-weight: 700;\n}\n\n.about-card p {\n\tfont-size: 0.85rem;\n\tcolor: var(--text-2);\n\tline-height: 1.6;\n}\n\n/* ============================================================\n   Footer\n   ============================================================ */\n.site-footer {\n\ttext-align: center;\n\tpadding: 2rem 1.5rem 3rem;\n\tfont-size: 0.8rem;\n\tcolor: var(--text-3);\n}\n\n.site-footer a {\n\tcolor: var(--accent-1);\n\ttext-decoration: none;\n}\n\n.site-footer a:hover {\n\ttext-decoration: underline;\n}\n\n/* ============================================================\n   Snackbar\n   ============================================================ */\n.snackbar {\n\tposition: fixed;\n\tbottom: 2rem;\n\tleft: 50%;\n\ttransform: translateX(-50%) translateY(200%);\n\ttransition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);\n\tz-index: 100;\n\tmin-width: 280px;\n\tmax-width: min(480px, calc(100vw - 2rem));\n\tbackground: rgba(14, 14, 26, 0.95);\n\tbackdrop-filter: blur(24px);\n\t-webkit-backdrop-filter: blur(24px);\n\tborder: 1px solid rgba(129, 140, 248, 0.25);\n\tborder-radius: var(--radius-md);\n\tbox-shadow:\n\t\t0 8px 32px rgba(0, 0, 0, 0.5),\n\t\t0 0 40px rgba(129, 140, 248, 0.08);\n\toverflow: hidden;\n}\n\n.snackbar.is-visible {\n\ttransform: translateX(-50%) translateY(0);\n}\n\n.snackbar__content {\n\tdisplay: flex;\n\talign-items: center;\n\tgap: 0.75rem;\n\tpadding: 0.9rem 1.25rem 0.75rem;\n}\n\n.snackbar__badge {\n\tflex-shrink: 0;\n\tfont-size: 0.62rem;\n\tfont-weight: 800;\n\ttext-transform: uppercase;\n\tletter-spacing: 0.07em;\n\tpadding: 0.22em 0.6em;\n\tborder-radius: 5px;\n\tbackground: linear-gradient(135deg, var(--accent-1), var(--accent-2));\n\tcolor: #fff;\n\twhite-space: nowrap;\n}\n\n.snackbar__value {\n\tfont-family: var(--font-mono);\n\tfont-size: 0.88rem;\n\tcolor: var(--text-1);\n\toverflow: hidden;\n\ttext-overflow: ellipsis;\n\twhite-space: nowrap;\n\tflex: 1;\n}\n\n.snackbar__progress {\n\theight: 3px;\n\tbackground: linear-gradient(90deg, var(--accent-1), var(--accent-2));\n\ttransform-origin: left center;\n\ttransform: scaleX(1);\n}\n\n.snackbar.is-visible .snackbar__progress {\n\tanimation: progressShrink 4s linear forwards;\n}\n\n@keyframes progressShrink {\n\tto { transform: scaleX(0); }\n}\n\n/* ============================================================\n   Browser compatibility section\n   ============================================================ */\n.compat-grid {\n\tdisplay: grid;\n\tgrid-template-columns: repeat(auto-fill, minmax(200px, 1fr));\n\tgap: 1rem;\n\tmargin-bottom: 1.5rem;\n}\n\n.compat-card {\n\tpadding: 1.25rem;\n\tdisplay: flex;\n\tflex-direction: column;\n\tgap: 0.5rem;\n}\n\n.compat-card__browser {\n\tdisplay: flex;\n\talign-items: center;\n\tgap: 0.6rem;\n\tfont-weight: 700;\n\tfont-size: 0.95rem;\n}\n\n.browser-icon {\n\twidth: 22px;\n\theight: 22px;\n\tflex-shrink: 0;\n\tcolor: var(--text-2);\n}\n\n.compat-card p {\n\tfont-size: 0.78rem;\n\tcolor: var(--text-3);\n\tline-height: 1.4;\n}\n\n.compat-badge {\n\tdisplay: inline-block;\n\tfont-size: 0.7rem;\n\tfont-weight: 700;\n\tletter-spacing: 0.05em;\n\tpadding: 0.25em 0.7em;\n\tborder-radius: 999px;\n\talign-self: flex-start;\n}\n\n.compat-badge--yes {\n\tbackground: rgba(74, 222, 128, 0.12);\n\tcolor: var(--success);\n\tborder: 1px solid rgba(74, 222, 128, 0.25);\n}\n\n.compat-badge--no {\n\tbackground: rgba(248, 113, 113, 0.1);\n\tcolor: #f87171;\n\tborder: 1px solid rgba(248, 113, 113, 0.2);\n}\n\n.compat-card--yes {\n\tborder-color: rgba(74, 222, 128, 0.12);\n}\n\n.compat-card--no {\n\tborder-color: rgba(248, 113, 113, 0.08);\n\topacity: 0.8;\n}\n\n/* Device/browser table */\n.device-table-wrap {\n\tpadding: 1.5rem;\n\toverflow-x: auto;\n}\n\n.device-table {\n\twidth: 100%;\n\tborder-collapse: collapse;\n\tfont-size: 0.85rem;\n\tmin-width: 380px;\n}\n\n.device-table th,\n.device-table td {\n\tpadding: 0.7rem 1rem;\n\ttext-align: center;\n\tborder-bottom: 1px solid var(--border);\n}\n\n.device-table th {\n\tfont-weight: 700;\n\tfont-size: 0.75rem;\n\tletter-spacing: 0.05em;\n\ttext-transform: uppercase;\n\tcolor: var(--text-2);\n}\n\n.device-table th:first-child,\n.device-table td:first-child {\n\ttext-align: left;\n}\n\n.device-table tbody tr:last-child td {\n\tborder-bottom: none;\n}\n\n.td-yes  { color: var(--success); font-weight: 700; }\n.td-no   { color: #f87171; font-weight: 700; }\n.td-na   { color: var(--text-3); }\n\n.device-table__note {\n\tmargin-top: 1rem;\n\tfont-size: 0.75rem;\n\tcolor: var(--text-3);\n\tline-height: 1.6;\n\tborder-top: 1px solid var(--border);\n\tpadding-top: 0.75rem;\n}\n\n/* ============================================================\n   PWA install banner\n   ============================================================ */\n.install-banner {\n\tdisplay: flex;\n\talign-items: center;\n\tgap: 1rem;\n\tpadding: 1rem 1.25rem;\n\tflex-wrap: wrap;\n}\n\n.install-banner__icon img {\n\tborder-radius: var(--radius-sm);\n\tdisplay: block;\n}\n\n.install-banner__text {\n\tflex: 1;\n\tmin-width: 180px;\n}\n\n.install-banner__text strong {\n\tdisplay: block;\n\tfont-size: 0.9rem;\n\tmargin-bottom: 0.15rem;\n}\n\n.install-banner__text p {\n\tfont-size: 0.8rem;\n\tcolor: var(--text-2);\n}\n\n.install-banner__btn {\n\tflex-shrink: 0;\n\tfont-size: 0.85rem;\n\tpadding: 0.55rem 1.2rem;\n}\n\n/* ============================================================\n   Responsive\n   ============================================================ */\n@media (max-width: 640px) {\n\t.hero {\n\t\tpadding: 3.5rem 1rem 2rem;\n\t}\n\n\t.video-wrapper {\n\t\taspect-ratio: 3/4;\n\t\tmax-height: 420px;\n\t}\n\n\t.bento-grid {\n\t\tgrid-template-columns: repeat(2, 1fr);\n\t}\n\n\t.about-grid {\n\t\tgrid-template-columns: 1fr 1fr;\n\t}\n\n\t.snackbar {\n\t\tbottom: 1rem;\n\t}\n}\n\n@media (max-width: 400px) {\n\t.bento-grid {\n\t\tgrid-template-columns: 1fr;\n\t}\n\n\t.about-grid {\n\t\tgrid-template-columns: 1fr;\n\t}\n}\n"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ __webpack_exports__["default"] = (___CSS_LOADER_EXPORT___);
 
 
 /***/ }),
-/* 12 */
+/* 9 */
 /***/ (function(module) {
 
 "use strict";
@@ -1178,26 +325,20 @@ ___CSS_LOADER_EXPORT___.push([module.id, "/* ===================================
 module.exports = function (item) {
   var content = item[1];
   var cssMapping = item[3];
-
   if (!cssMapping) {
     return content;
   }
-
   if (typeof btoa === "function") {
     var base64 = btoa(unescape(encodeURIComponent(JSON.stringify(cssMapping))));
     var data = "sourceMappingURL=data:application/json;charset=utf-8;base64,".concat(base64);
     var sourceMapping = "/*# ".concat(data, " */");
-    var sourceURLs = cssMapping.sources.map(function (source) {
-      return "/*# sourceURL=".concat(cssMapping.sourceRoot || "").concat(source, " */");
-    });
-    return [content].concat(sourceURLs).concat([sourceMapping]).join("\n");
+    return [content].concat([sourceMapping]).join("\n");
   }
-
   return [content].join("\n");
 };
 
 /***/ }),
-/* 13 */
+/* 10 */
 /***/ (function(module) {
 
 "use strict";
@@ -1208,68 +349,55 @@ module.exports = function (item) {
   Author Tobias Koppers @sokra
 */
 module.exports = function (cssWithMappingToString) {
-  var list = []; // return the list of modules as css string
+  var list = [];
 
+  // return the list of modules as css string
   list.toString = function toString() {
     return this.map(function (item) {
       var content = "";
       var needLayer = typeof item[5] !== "undefined";
-
       if (item[4]) {
         content += "@supports (".concat(item[4], ") {");
       }
-
       if (item[2]) {
         content += "@media ".concat(item[2], " {");
       }
-
       if (needLayer) {
         content += "@layer".concat(item[5].length > 0 ? " ".concat(item[5]) : "", " {");
       }
-
       content += cssWithMappingToString(item);
-
       if (needLayer) {
         content += "}";
       }
-
       if (item[2]) {
         content += "}";
       }
-
       if (item[4]) {
         content += "}";
       }
-
       return content;
     }).join("");
-  }; // import a list of modules into the list
+  };
 
-
+  // import a list of modules into the list
   list.i = function i(modules, media, dedupe, supports, layer) {
     if (typeof modules === "string") {
       modules = [[null, modules, undefined]];
     }
-
     var alreadyImportedModules = {};
-
     if (dedupe) {
-      for (var _i = 0; _i < this.length; _i++) {
-        var id = this[_i][0];
-
+      for (var k = 0; k < this.length; k++) {
+        var id = this[k][0];
         if (id != null) {
           alreadyImportedModules[id] = true;
         }
       }
     }
-
-    for (var _i2 = 0; _i2 < modules.length; _i2++) {
-      var item = [].concat(modules[_i2]);
-
+    for (var _k = 0; _k < modules.length; _k++) {
+      var item = [].concat(modules[_k]);
       if (dedupe && alreadyImportedModules[item[0]]) {
         continue;
       }
-
       if (typeof layer !== "undefined") {
         if (typeof item[5] === "undefined") {
           item[5] = layer;
@@ -1278,7 +406,6 @@ module.exports = function (cssWithMappingToString) {
           item[5] = layer;
         }
       }
-
       if (media) {
         if (!item[2]) {
           item[2] = media;
@@ -1287,7 +414,6 @@ module.exports = function (cssWithMappingToString) {
           item[2] = media;
         }
       }
-
       if (supports) {
         if (!item[4]) {
           item[4] = "".concat(supports);
@@ -1296,52 +422,50 @@ module.exports = function (cssWithMappingToString) {
           item[4] = supports;
         }
       }
-
       list.push(item);
     }
   };
-
   return list;
 };
 
 /***/ }),
-/* 14 */
+/* 11 */
 /***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
 "use strict";
 
 
-var _barcodes = __webpack_require__(15);
+var _barcodes = __webpack_require__(12);
 
 var _barcodes2 = _interopRequireDefault(_barcodes);
 
-var _merge = __webpack_require__(54);
+var _merge = __webpack_require__(51);
 
 var _merge2 = _interopRequireDefault(_merge);
 
-var _linearizeEncodings = __webpack_require__(55);
+var _linearizeEncodings = __webpack_require__(52);
 
 var _linearizeEncodings2 = _interopRequireDefault(_linearizeEncodings);
 
-var _fixOptions = __webpack_require__(56);
+var _fixOptions = __webpack_require__(53);
 
 var _fixOptions2 = _interopRequireDefault(_fixOptions);
 
-var _getRenderProperties = __webpack_require__(57);
+var _getRenderProperties = __webpack_require__(54);
 
 var _getRenderProperties2 = _interopRequireDefault(_getRenderProperties);
 
-var _optionsFromStrings = __webpack_require__(59);
+var _optionsFromStrings = __webpack_require__(56);
 
 var _optionsFromStrings2 = _interopRequireDefault(_optionsFromStrings);
 
-var _ErrorHandler = __webpack_require__(67);
+var _ErrorHandler = __webpack_require__(64);
 
 var _ErrorHandler2 = _interopRequireDefault(_ErrorHandler);
 
-var _exceptions = __webpack_require__(66);
+var _exceptions = __webpack_require__(63);
 
-var _defaults = __webpack_require__(60);
+var _defaults = __webpack_require__(57);
 
 var _defaults2 = _interopRequireDefault(_defaults);
 
@@ -1563,7 +687,7 @@ if (typeof jQuery !== 'undefined') {
 module.exports = JsBarcode;
 
 /***/ }),
-/* 15 */
+/* 12 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -1573,23 +697,23 @@ Object.defineProperty(exports, "__esModule", ({
 	value: true
 }));
 
-var _CODE = __webpack_require__(16);
+var _CODE = __webpack_require__(13);
 
-var _CODE2 = __webpack_require__(18);
+var _CODE2 = __webpack_require__(15);
 
-var _EAN_UPC = __webpack_require__(26);
+var _EAN_UPC = __webpack_require__(23);
 
-var _ITF = __webpack_require__(36);
+var _ITF = __webpack_require__(33);
 
-var _MSI = __webpack_require__(40);
+var _MSI = __webpack_require__(37);
 
-var _pharmacode = __webpack_require__(47);
+var _pharmacode = __webpack_require__(44);
 
-var _codabar = __webpack_require__(48);
+var _codabar = __webpack_require__(45);
 
-var _CODE3 = __webpack_require__(49);
+var _CODE3 = __webpack_require__(46);
 
-var _GenericBarcode = __webpack_require__(53);
+var _GenericBarcode = __webpack_require__(50);
 
 exports["default"] = {
 	CODE39: _CODE.CODE39,
@@ -1605,7 +729,7 @@ exports["default"] = {
 };
 
 /***/ }),
-/* 16 */
+/* 13 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -1618,7 +742,7 @@ exports.CODE39 = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Barcode2 = __webpack_require__(17);
+var _Barcode2 = __webpack_require__(14);
 
 var _Barcode3 = _interopRequireDefault(_Barcode2);
 
@@ -1716,7 +840,7 @@ function mod43checksum(data) {
 exports.CODE39 = CODE39;
 
 /***/ }),
-/* 17 */
+/* 14 */
 /***/ (function(__unused_webpack_module, exports) {
 
 "use strict";
@@ -1739,7 +863,7 @@ var Barcode = function Barcode(data, options) {
 exports["default"] = Barcode;
 
 /***/ }),
-/* 18 */
+/* 15 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -1750,19 +874,19 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.CODE128C = exports.CODE128B = exports.CODE128A = exports.CODE128 = undefined;
 
-var _CODE128_AUTO = __webpack_require__(19);
+var _CODE128_AUTO = __webpack_require__(16);
 
 var _CODE128_AUTO2 = _interopRequireDefault(_CODE128_AUTO);
 
-var _CODE128A = __webpack_require__(23);
+var _CODE128A = __webpack_require__(20);
 
 var _CODE128A2 = _interopRequireDefault(_CODE128A);
 
-var _CODE128B = __webpack_require__(24);
+var _CODE128B = __webpack_require__(21);
 
 var _CODE128B2 = _interopRequireDefault(_CODE128B);
 
-var _CODE128C = __webpack_require__(25);
+var _CODE128C = __webpack_require__(22);
 
 var _CODE128C2 = _interopRequireDefault(_CODE128C);
 
@@ -1774,7 +898,7 @@ exports.CODE128B = _CODE128B2.default;
 exports.CODE128C = _CODE128C2.default;
 
 /***/ }),
-/* 19 */
+/* 16 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -1784,11 +908,11 @@ Object.defineProperty(exports, "__esModule", ({
 	value: true
 }));
 
-var _CODE2 = __webpack_require__(20);
+var _CODE2 = __webpack_require__(17);
 
 var _CODE3 = _interopRequireDefault(_CODE2);
 
-var _auto = __webpack_require__(22);
+var _auto = __webpack_require__(19);
 
 var _auto2 = _interopRequireDefault(_auto);
 
@@ -1821,7 +945,7 @@ var CODE128AUTO = function (_CODE) {
 exports["default"] = CODE128AUTO;
 
 /***/ }),
-/* 20 */
+/* 17 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -1833,11 +957,11 @@ Object.defineProperty(exports, "__esModule", ({
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Barcode2 = __webpack_require__(17);
+var _Barcode2 = __webpack_require__(14);
 
 var _Barcode3 = _interopRequireDefault(_Barcode2);
 
-var _constants = __webpack_require__(21);
+var _constants = __webpack_require__(18);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -1994,7 +1118,7 @@ var CODE128 = function (_Barcode) {
 exports["default"] = CODE128;
 
 /***/ }),
-/* 21 */
+/* 18 */
 /***/ (function(__unused_webpack_module, exports) {
 
 "use strict";
@@ -2054,7 +1178,7 @@ var C_CHARS = exports.C_CHARS = "(\xCF*[0-9]{2}\xCF*)";
 var BARS = exports.BARS = [11011001100, 11001101100, 11001100110, 10010011000, 10010001100, 10001001100, 10011001000, 10011000100, 10001100100, 11001001000, 11001000100, 11000100100, 10110011100, 10011011100, 10011001110, 10111001100, 10011101100, 10011100110, 11001110010, 11001011100, 11001001110, 11011100100, 11001110100, 11101101110, 11101001100, 11100101100, 11100100110, 11101100100, 11100110100, 11100110010, 11011011000, 11011000110, 11000110110, 10100011000, 10001011000, 10001000110, 10110001000, 10001101000, 10001100010, 11010001000, 11000101000, 11000100010, 10110111000, 10110001110, 10001101110, 10111011000, 10111000110, 10001110110, 11101110110, 11010001110, 11000101110, 11011101000, 11011100010, 11011101110, 11101011000, 11101000110, 11100010110, 11101101000, 11101100010, 11100011010, 11101111010, 11001000010, 11110001010, 10100110000, 10100001100, 10010110000, 10010000110, 10000101100, 10000100110, 10110010000, 10110000100, 10011010000, 10011000010, 10000110100, 10000110010, 11000010010, 11001010000, 11110111010, 11000010100, 10001111010, 10100111100, 10010111100, 10010011110, 10111100100, 10011110100, 10011110010, 11110100100, 11110010100, 11110010010, 11011011110, 11011110110, 11110110110, 10101111000, 10100011110, 10001011110, 10111101000, 10111100010, 11110101000, 11110100010, 10111011110, 10111101110, 11101011110, 11110101110, 11010000100, 11010010000, 11010011100, 1100011101011];
 
 /***/ }),
-/* 22 */
+/* 19 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -2064,7 +1188,7 @@ Object.defineProperty(exports, "__esModule", ({
 	value: true
 }));
 
-var _constants = __webpack_require__(21);
+var _constants = __webpack_require__(18);
 
 // Match Set functions
 var matchSetALength = function matchSetALength(string) {
@@ -2133,7 +1257,7 @@ exports["default"] = function (string) {
 };
 
 /***/ }),
-/* 23 */
+/* 20 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -2145,11 +1269,11 @@ Object.defineProperty(exports, "__esModule", ({
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _CODE2 = __webpack_require__(20);
+var _CODE2 = __webpack_require__(17);
 
 var _CODE3 = _interopRequireDefault(_CODE2);
 
-var _constants = __webpack_require__(21);
+var _constants = __webpack_require__(18);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -2181,7 +1305,7 @@ var CODE128A = function (_CODE) {
 exports["default"] = CODE128A;
 
 /***/ }),
-/* 24 */
+/* 21 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -2193,11 +1317,11 @@ Object.defineProperty(exports, "__esModule", ({
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _CODE2 = __webpack_require__(20);
+var _CODE2 = __webpack_require__(17);
 
 var _CODE3 = _interopRequireDefault(_CODE2);
 
-var _constants = __webpack_require__(21);
+var _constants = __webpack_require__(18);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -2229,7 +1353,7 @@ var CODE128B = function (_CODE) {
 exports["default"] = CODE128B;
 
 /***/ }),
-/* 25 */
+/* 22 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -2241,11 +1365,11 @@ Object.defineProperty(exports, "__esModule", ({
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _CODE2 = __webpack_require__(20);
+var _CODE2 = __webpack_require__(17);
 
 var _CODE3 = _interopRequireDefault(_CODE2);
 
-var _constants = __webpack_require__(21);
+var _constants = __webpack_require__(18);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -2277,7 +1401,7 @@ var CODE128C = function (_CODE) {
 exports["default"] = CODE128C;
 
 /***/ }),
-/* 26 */
+/* 23 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -2288,27 +1412,27 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.UPCE = exports.UPC = exports.EAN2 = exports.EAN5 = exports.EAN8 = exports.EAN13 = undefined;
 
-var _EAN = __webpack_require__(27);
+var _EAN = __webpack_require__(24);
 
 var _EAN2 = _interopRequireDefault(_EAN);
 
-var _EAN3 = __webpack_require__(31);
+var _EAN3 = __webpack_require__(28);
 
 var _EAN4 = _interopRequireDefault(_EAN3);
 
-var _EAN5 = __webpack_require__(32);
+var _EAN5 = __webpack_require__(29);
 
 var _EAN6 = _interopRequireDefault(_EAN5);
 
-var _EAN7 = __webpack_require__(33);
+var _EAN7 = __webpack_require__(30);
 
 var _EAN8 = _interopRequireDefault(_EAN7);
 
-var _UPC = __webpack_require__(34);
+var _UPC = __webpack_require__(31);
 
 var _UPC2 = _interopRequireDefault(_UPC);
 
-var _UPCE = __webpack_require__(35);
+var _UPCE = __webpack_require__(32);
 
 var _UPCE2 = _interopRequireDefault(_UPCE);
 
@@ -2322,7 +1446,7 @@ exports.UPC = _UPC2.default;
 exports.UPCE = _UPCE2.default;
 
 /***/ }),
-/* 27 */
+/* 24 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -2336,9 +1460,9 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _constants = __webpack_require__(28);
+var _constants = __webpack_require__(25);
 
-var _EAN2 = __webpack_require__(29);
+var _EAN2 = __webpack_require__(26);
 
 var _EAN3 = _interopRequireDefault(_EAN2);
 
@@ -2447,7 +1571,7 @@ var EAN13 = function (_EAN) {
 exports["default"] = EAN13;
 
 /***/ }),
-/* 28 */
+/* 25 */
 /***/ (function(__unused_webpack_module, exports) {
 
 "use strict";
@@ -2483,7 +1607,7 @@ var EAN5_STRUCTURE = exports.EAN5_STRUCTURE = ['GGLLL', 'GLGLL', 'GLLGL', 'GLLLG
 var EAN13_STRUCTURE = exports.EAN13_STRUCTURE = ['LLLLLL', 'LLGLGG', 'LLGGLG', 'LLGGGL', 'LGLLGG', 'LGGLLG', 'LGGGLL', 'LGLGLG', 'LGLGGL', 'LGGLGL'];
 
 /***/ }),
-/* 29 */
+/* 26 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -2495,13 +1619,13 @@ Object.defineProperty(exports, "__esModule", ({
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _constants = __webpack_require__(28);
+var _constants = __webpack_require__(25);
 
-var _encoder = __webpack_require__(30);
+var _encoder = __webpack_require__(27);
 
 var _encoder2 = _interopRequireDefault(_encoder);
 
-var _Barcode2 = __webpack_require__(17);
+var _Barcode2 = __webpack_require__(14);
 
 var _Barcode3 = _interopRequireDefault(_Barcode2);
 
@@ -2581,7 +1705,7 @@ var EAN = function (_Barcode) {
 exports["default"] = EAN;
 
 /***/ }),
-/* 30 */
+/* 27 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -2591,7 +1715,7 @@ Object.defineProperty(exports, "__esModule", ({
 	value: true
 }));
 
-var _constants = __webpack_require__(28);
+var _constants = __webpack_require__(25);
 
 // Encode data string
 var encode = function encode(data, structure, separator) {
@@ -2614,7 +1738,7 @@ var encode = function encode(data, structure, separator) {
 exports["default"] = encode;
 
 /***/ }),
-/* 31 */
+/* 28 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -2628,7 +1752,7 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _get = function get(object, property, receiver) { if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { return get(parent, property, receiver); } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } };
 
-var _EAN2 = __webpack_require__(29);
+var _EAN2 = __webpack_require__(26);
 
 var _EAN3 = _interopRequireDefault(_EAN2);
 
@@ -2701,7 +1825,7 @@ var EAN8 = function (_EAN) {
 exports["default"] = EAN8;
 
 /***/ }),
-/* 32 */
+/* 29 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -2713,13 +1837,13 @@ Object.defineProperty(exports, "__esModule", ({
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _constants = __webpack_require__(28);
+var _constants = __webpack_require__(25);
 
-var _encoder = __webpack_require__(30);
+var _encoder = __webpack_require__(27);
 
 var _encoder2 = _interopRequireDefault(_encoder);
 
-var _Barcode2 = __webpack_require__(17);
+var _Barcode2 = __webpack_require__(14);
 
 var _Barcode3 = _interopRequireDefault(_Barcode2);
 
@@ -2772,7 +1896,7 @@ var EAN5 = function (_Barcode) {
 exports["default"] = EAN5;
 
 /***/ }),
-/* 33 */
+/* 30 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -2784,13 +1908,13 @@ Object.defineProperty(exports, "__esModule", ({
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _constants = __webpack_require__(28);
+var _constants = __webpack_require__(25);
 
-var _encoder = __webpack_require__(30);
+var _encoder = __webpack_require__(27);
 
 var _encoder2 = _interopRequireDefault(_encoder);
 
-var _Barcode2 = __webpack_require__(17);
+var _Barcode2 = __webpack_require__(14);
 
 var _Barcode3 = _interopRequireDefault(_Barcode2);
 
@@ -2836,7 +1960,7 @@ var EAN2 = function (_Barcode) {
 exports["default"] = EAN2;
 
 /***/ }),
-/* 34 */
+/* 31 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -2850,11 +1974,11 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 exports.checksum = checksum;
 
-var _encoder = __webpack_require__(30);
+var _encoder = __webpack_require__(27);
 
 var _encoder2 = _interopRequireDefault(_encoder);
 
-var _Barcode2 = __webpack_require__(17);
+var _Barcode2 = __webpack_require__(14);
 
 var _Barcode3 = _interopRequireDefault(_Barcode2);
 
@@ -3007,7 +2131,7 @@ function checksum(number) {
 exports["default"] = UPC;
 
 /***/ }),
-/* 35 */
+/* 32 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -3019,15 +2143,15 @@ Object.defineProperty(exports, "__esModule", ({
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _encoder = __webpack_require__(30);
+var _encoder = __webpack_require__(27);
 
 var _encoder2 = _interopRequireDefault(_encoder);
 
-var _Barcode2 = __webpack_require__(17);
+var _Barcode2 = __webpack_require__(14);
 
 var _Barcode3 = _interopRequireDefault(_Barcode2);
 
-var _UPC = __webpack_require__(34);
+var _UPC = __webpack_require__(31);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -3198,7 +2322,7 @@ function expandToUPCA(middleDigits, numberSystem) {
 exports["default"] = UPCE;
 
 /***/ }),
-/* 36 */
+/* 33 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -3209,11 +2333,11 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.ITF14 = exports.ITF = undefined;
 
-var _ITF = __webpack_require__(37);
+var _ITF = __webpack_require__(34);
 
 var _ITF2 = _interopRequireDefault(_ITF);
 
-var _ITF3 = __webpack_require__(39);
+var _ITF3 = __webpack_require__(36);
 
 var _ITF4 = _interopRequireDefault(_ITF3);
 
@@ -3223,7 +2347,7 @@ exports.ITF = _ITF2.default;
 exports.ITF14 = _ITF4.default;
 
 /***/ }),
-/* 37 */
+/* 34 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -3235,9 +2359,9 @@ Object.defineProperty(exports, "__esModule", ({
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _constants = __webpack_require__(38);
+var _constants = __webpack_require__(35);
 
-var _Barcode2 = __webpack_require__(17);
+var _Barcode2 = __webpack_require__(14);
 
 var _Barcode3 = _interopRequireDefault(_Barcode2);
 
@@ -3298,7 +2422,7 @@ var ITF = function (_Barcode) {
 exports["default"] = ITF;
 
 /***/ }),
-/* 38 */
+/* 35 */
 /***/ (function(__unused_webpack_module, exports) {
 
 "use strict";
@@ -3313,7 +2437,7 @@ var END_BIN = exports.END_BIN = '11101';
 var BINARIES = exports.BINARIES = ['00110', '10001', '01001', '11000', '00101', '10100', '01100', '00011', '10010', '01010'];
 
 /***/ }),
-/* 39 */
+/* 36 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -3325,7 +2449,7 @@ Object.defineProperty(exports, "__esModule", ({
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _ITF2 = __webpack_require__(37);
+var _ITF2 = __webpack_require__(34);
 
 var _ITF3 = _interopRequireDefault(_ITF2);
 
@@ -3374,7 +2498,7 @@ var ITF14 = function (_ITF) {
 exports["default"] = ITF14;
 
 /***/ }),
-/* 40 */
+/* 37 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -3385,23 +2509,23 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.MSI1110 = exports.MSI1010 = exports.MSI11 = exports.MSI10 = exports.MSI = undefined;
 
-var _MSI = __webpack_require__(41);
+var _MSI = __webpack_require__(38);
 
 var _MSI2 = _interopRequireDefault(_MSI);
 
-var _MSI3 = __webpack_require__(42);
+var _MSI3 = __webpack_require__(39);
 
 var _MSI4 = _interopRequireDefault(_MSI3);
 
-var _MSI5 = __webpack_require__(44);
+var _MSI5 = __webpack_require__(41);
 
 var _MSI6 = _interopRequireDefault(_MSI5);
 
-var _MSI7 = __webpack_require__(45);
+var _MSI7 = __webpack_require__(42);
 
 var _MSI8 = _interopRequireDefault(_MSI7);
 
-var _MSI9 = __webpack_require__(46);
+var _MSI9 = __webpack_require__(43);
 
 var _MSI10 = _interopRequireDefault(_MSI9);
 
@@ -3414,7 +2538,7 @@ exports.MSI1010 = _MSI8.default;
 exports.MSI1110 = _MSI10.default;
 
 /***/ }),
-/* 41 */
+/* 38 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -3426,7 +2550,7 @@ Object.defineProperty(exports, "__esModule", ({
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Barcode2 = __webpack_require__(17);
+var _Barcode2 = __webpack_require__(14);
 
 var _Barcode3 = _interopRequireDefault(_Barcode2);
 
@@ -3494,7 +2618,7 @@ function addZeroes(number, n) {
 exports["default"] = MSI;
 
 /***/ }),
-/* 42 */
+/* 39 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -3504,11 +2628,11 @@ Object.defineProperty(exports, "__esModule", ({
 	value: true
 }));
 
-var _MSI2 = __webpack_require__(41);
+var _MSI2 = __webpack_require__(38);
 
 var _MSI3 = _interopRequireDefault(_MSI2);
 
-var _checksums = __webpack_require__(43);
+var _checksums = __webpack_require__(40);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -3533,7 +2657,7 @@ var MSI10 = function (_MSI) {
 exports["default"] = MSI10;
 
 /***/ }),
-/* 43 */
+/* 40 */
 /***/ (function(__unused_webpack_module, exports) {
 
 "use strict";
@@ -3568,7 +2692,7 @@ function mod11(number) {
 }
 
 /***/ }),
-/* 44 */
+/* 41 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -3578,11 +2702,11 @@ Object.defineProperty(exports, "__esModule", ({
 	value: true
 }));
 
-var _MSI2 = __webpack_require__(41);
+var _MSI2 = __webpack_require__(38);
 
 var _MSI3 = _interopRequireDefault(_MSI2);
 
-var _checksums = __webpack_require__(43);
+var _checksums = __webpack_require__(40);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -3607,7 +2731,7 @@ var MSI11 = function (_MSI) {
 exports["default"] = MSI11;
 
 /***/ }),
-/* 45 */
+/* 42 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -3617,11 +2741,11 @@ Object.defineProperty(exports, "__esModule", ({
 	value: true
 }));
 
-var _MSI2 = __webpack_require__(41);
+var _MSI2 = __webpack_require__(38);
 
 var _MSI3 = _interopRequireDefault(_MSI2);
 
-var _checksums = __webpack_require__(43);
+var _checksums = __webpack_require__(40);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -3648,7 +2772,7 @@ var MSI1010 = function (_MSI) {
 exports["default"] = MSI1010;
 
 /***/ }),
-/* 46 */
+/* 43 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -3658,11 +2782,11 @@ Object.defineProperty(exports, "__esModule", ({
 	value: true
 }));
 
-var _MSI2 = __webpack_require__(41);
+var _MSI2 = __webpack_require__(38);
 
 var _MSI3 = _interopRequireDefault(_MSI2);
 
-var _checksums = __webpack_require__(43);
+var _checksums = __webpack_require__(40);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -3689,7 +2813,7 @@ var MSI1110 = function (_MSI) {
 exports["default"] = MSI1110;
 
 /***/ }),
-/* 47 */
+/* 44 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -3702,7 +2826,7 @@ exports.pharmacode = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Barcode2 = __webpack_require__(17);
+var _Barcode2 = __webpack_require__(14);
 
 var _Barcode3 = _interopRequireDefault(_Barcode2);
 
@@ -3768,7 +2892,7 @@ var pharmacode = function (_Barcode) {
 exports.pharmacode = pharmacode;
 
 /***/ }),
-/* 48 */
+/* 45 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -3781,7 +2905,7 @@ exports.codabar = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Barcode2 = __webpack_require__(17);
+var _Barcode2 = __webpack_require__(14);
 
 var _Barcode3 = _interopRequireDefault(_Barcode2);
 
@@ -3866,7 +2990,7 @@ var codabar = function (_Barcode) {
 exports.codabar = codabar;
 
 /***/ }),
-/* 49 */
+/* 46 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -3877,11 +3001,11 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.CODE93FullASCII = exports.CODE93 = undefined;
 
-var _CODE = __webpack_require__(50);
+var _CODE = __webpack_require__(47);
 
 var _CODE2 = _interopRequireDefault(_CODE);
 
-var _CODE93FullASCII = __webpack_require__(52);
+var _CODE93FullASCII = __webpack_require__(49);
 
 var _CODE93FullASCII2 = _interopRequireDefault(_CODE93FullASCII);
 
@@ -3891,7 +3015,7 @@ exports.CODE93 = _CODE2.default;
 exports.CODE93FullASCII = _CODE93FullASCII2.default;
 
 /***/ }),
-/* 50 */
+/* 47 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -3903,9 +3027,9 @@ Object.defineProperty(exports, "__esModule", ({
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _constants = __webpack_require__(51);
+var _constants = __webpack_require__(48);
 
-var _Barcode2 = __webpack_require__(17);
+var _Barcode2 = __webpack_require__(14);
 
 var _Barcode3 = _interopRequireDefault(_Barcode2);
 
@@ -4007,7 +3131,7 @@ var CODE93 = function (_Barcode) {
 exports["default"] = CODE93;
 
 /***/ }),
-/* 51 */
+/* 48 */
 /***/ (function(__unused_webpack_module, exports) {
 
 "use strict";
@@ -4116,7 +3240,7 @@ var MULTI_SYMBOLS = exports.MULTI_SYMBOLS = {
 };
 
 /***/ }),
-/* 52 */
+/* 49 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -4128,7 +3252,7 @@ Object.defineProperty(exports, "__esModule", ({
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _CODE2 = __webpack_require__(50);
+var _CODE2 = __webpack_require__(47);
 
 var _CODE3 = _interopRequireDefault(_CODE2);
 
@@ -4164,7 +3288,7 @@ var CODE93FullASCII = function (_CODE) {
 exports["default"] = CODE93FullASCII;
 
 /***/ }),
-/* 53 */
+/* 50 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -4177,7 +3301,7 @@ exports.GenericBarcode = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _Barcode2 = __webpack_require__(17);
+var _Barcode2 = __webpack_require__(14);
 
 var _Barcode3 = _interopRequireDefault(_Barcode2);
 
@@ -4225,7 +3349,7 @@ var GenericBarcode = function (_Barcode) {
 exports.GenericBarcode = GenericBarcode;
 
 /***/ }),
-/* 54 */
+/* 51 */
 /***/ (function(__unused_webpack_module, exports) {
 
 "use strict";
@@ -4242,7 +3366,7 @@ exports["default"] = function (old, replaceObj) {
 };
 
 /***/ }),
-/* 55 */
+/* 52 */
 /***/ (function(__unused_webpack_module, exports) {
 
 "use strict";
@@ -4275,7 +3399,7 @@ function linearizeEncodings(encodings) {
 }
 
 /***/ }),
-/* 56 */
+/* 53 */
 /***/ (function(__unused_webpack_module, exports) {
 
 "use strict";
@@ -4298,7 +3422,7 @@ function fixOptions(options) {
 }
 
 /***/ }),
-/* 57 */
+/* 54 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -4312,15 +3436,15 @@ var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol
 /* global HTMLCanvasElement */
 /* global SVGElement */
 
-var _getOptionsFromElement = __webpack_require__(58);
+var _getOptionsFromElement = __webpack_require__(55);
 
 var _getOptionsFromElement2 = _interopRequireDefault(_getOptionsFromElement);
 
-var _renderers = __webpack_require__(61);
+var _renderers = __webpack_require__(58);
 
 var _renderers2 = _interopRequireDefault(_renderers);
 
-var _exceptions = __webpack_require__(66);
+var _exceptions = __webpack_require__(63);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -4412,7 +3536,7 @@ function newCanvasRenderProperties(imgElement) {
 exports["default"] = getRenderProperties;
 
 /***/ }),
-/* 58 */
+/* 55 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -4422,11 +3546,11 @@ Object.defineProperty(exports, "__esModule", ({
 	value: true
 }));
 
-var _optionsFromStrings = __webpack_require__(59);
+var _optionsFromStrings = __webpack_require__(56);
 
 var _optionsFromStrings2 = _interopRequireDefault(_optionsFromStrings);
 
-var _defaults = __webpack_require__(60);
+var _defaults = __webpack_require__(57);
 
 var _defaults2 = _interopRequireDefault(_defaults);
 
@@ -4459,7 +3583,7 @@ function getOptionsFromElement(element) {
 exports["default"] = getOptionsFromElement;
 
 /***/ }),
-/* 59 */
+/* 56 */
 /***/ (function(__unused_webpack_module, exports) {
 
 "use strict";
@@ -4492,7 +3616,7 @@ function optionsFromStrings(options) {
 }
 
 /***/ }),
-/* 60 */
+/* 57 */
 /***/ (function(__unused_webpack_module, exports) {
 
 "use strict";
@@ -4526,7 +3650,7 @@ var defaults = {
 exports["default"] = defaults;
 
 /***/ }),
-/* 61 */
+/* 58 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -4536,15 +3660,15 @@ Object.defineProperty(exports, "__esModule", ({
   value: true
 }));
 
-var _canvas = __webpack_require__(62);
+var _canvas = __webpack_require__(59);
 
 var _canvas2 = _interopRequireDefault(_canvas);
 
-var _svg = __webpack_require__(64);
+var _svg = __webpack_require__(61);
 
 var _svg2 = _interopRequireDefault(_svg);
 
-var _object = __webpack_require__(65);
+var _object = __webpack_require__(62);
 
 var _object2 = _interopRequireDefault(_object);
 
@@ -4553,7 +3677,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 exports["default"] = { CanvasRenderer: _canvas2.default, SVGRenderer: _svg2.default, ObjectRenderer: _object2.default };
 
 /***/ }),
-/* 62 */
+/* 59 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -4565,11 +3689,11 @@ Object.defineProperty(exports, "__esModule", ({
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _merge = __webpack_require__(54);
+var _merge = __webpack_require__(51);
 
 var _merge2 = _interopRequireDefault(_merge);
 
-var _shared = __webpack_require__(63);
+var _shared = __webpack_require__(60);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -4717,7 +3841,7 @@ var CanvasRenderer = function () {
 exports["default"] = CanvasRenderer;
 
 /***/ }),
-/* 63 */
+/* 60 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -4728,7 +3852,7 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports.getTotalWidthOfEncodings = exports.calculateEncodingAttributes = exports.getBarcodePadding = exports.getEncodingHeight = exports.getMaximumHeightOfEncodings = undefined;
 
-var _merge = __webpack_require__(54);
+var _merge = __webpack_require__(51);
 
 var _merge2 = _interopRequireDefault(_merge);
 
@@ -4824,7 +3948,7 @@ exports.calculateEncodingAttributes = calculateEncodingAttributes;
 exports.getTotalWidthOfEncodings = getTotalWidthOfEncodings;
 
 /***/ }),
-/* 64 */
+/* 61 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 "use strict";
@@ -4836,11 +3960,11 @@ Object.defineProperty(exports, "__esModule", ({
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _merge = __webpack_require__(54);
+var _merge = __webpack_require__(51);
 
 var _merge2 = _interopRequireDefault(_merge);
 
-var _shared = __webpack_require__(63);
+var _shared = __webpack_require__(60);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -5024,7 +4148,7 @@ var SVGRenderer = function () {
 exports["default"] = SVGRenderer;
 
 /***/ }),
-/* 65 */
+/* 62 */
 /***/ (function(__unused_webpack_module, exports) {
 
 "use strict";
@@ -5060,7 +4184,7 @@ var ObjectRenderer = function () {
 exports["default"] = ObjectRenderer;
 
 /***/ }),
-/* 66 */
+/* 63 */
 /***/ (function(__unused_webpack_module, exports) {
 
 "use strict";
@@ -5133,7 +4257,7 @@ exports.InvalidElementException = InvalidElementException;
 exports.NoElementException = NoElementException;
 
 /***/ }),
-/* 67 */
+/* 64 */
 /***/ (function(__unused_webpack_module, exports) {
 
 "use strict";
@@ -5193,15 +4317,15 @@ var ErrorHandler = function () {
 exports["default"] = ErrorHandler;
 
 /***/ }),
-/* 68 */
+/* 65 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 
-const canPromise = __webpack_require__(69)
+const canPromise = __webpack_require__(66)
 
-const QRCode = __webpack_require__(70)
-const CanvasRenderer = __webpack_require__(93)
-const SvgRenderer = __webpack_require__(95)
+const QRCode = __webpack_require__(67)
+const CanvasRenderer = __webpack_require__(90)
+const SvgRenderer = __webpack_require__(92)
 
 function renderCanvas (renderFunc, canvas, text, opts, cb) {
   const args = [].slice.call(arguments, 1)
@@ -5275,7 +4399,7 @@ exports.toString = renderCanvas.bind(null, function (data, _, opts) {
 
 
 /***/ }),
-/* 69 */
+/* 66 */
 /***/ (function(module) {
 
 // can-promise has a crash in some versions of react native that dont have
@@ -5288,22 +4412,22 @@ module.exports = function () {
 
 
 /***/ }),
-/* 70 */
+/* 67 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
-const Utils = __webpack_require__(71)
-const ECLevel = __webpack_require__(72)
-const BitBuffer = __webpack_require__(73)
-const BitMatrix = __webpack_require__(74)
-const AlignmentPattern = __webpack_require__(75)
-const FinderPattern = __webpack_require__(76)
-const MaskPattern = __webpack_require__(77)
-const ECCode = __webpack_require__(78)
-const ReedSolomonEncoder = __webpack_require__(79)
-const Version = __webpack_require__(82)
-const FormatInfo = __webpack_require__(86)
-const Mode = __webpack_require__(83)
-const Segments = __webpack_require__(87)
+const Utils = __webpack_require__(68)
+const ECLevel = __webpack_require__(69)
+const BitBuffer = __webpack_require__(70)
+const BitMatrix = __webpack_require__(71)
+const AlignmentPattern = __webpack_require__(72)
+const FinderPattern = __webpack_require__(73)
+const MaskPattern = __webpack_require__(74)
+const ECCode = __webpack_require__(75)
+const ReedSolomonEncoder = __webpack_require__(76)
+const Version = __webpack_require__(79)
+const FormatInfo = __webpack_require__(83)
+const Mode = __webpack_require__(80)
+const Segments = __webpack_require__(84)
 
 /**
  * QRCode for JavaScript
@@ -5789,7 +4913,7 @@ exports.create = function create (data, options) {
 
 
 /***/ }),
-/* 71 */
+/* 68 */
 /***/ (function(__unused_webpack_module, exports) {
 
 let toSJISFunction
@@ -5858,7 +4982,7 @@ exports.toSJIS = function toSJIS (kanji) {
 
 
 /***/ }),
-/* 72 */
+/* 69 */
 /***/ (function(__unused_webpack_module, exports) {
 
 exports.L = { bit: 1 }
@@ -5914,7 +5038,7 @@ exports.from = function from (value, defaultValue) {
 
 
 /***/ }),
-/* 73 */
+/* 70 */
 /***/ (function(module) {
 
 function BitBuffer () {
@@ -5957,7 +5081,7 @@ module.exports = BitBuffer
 
 
 /***/ }),
-/* 74 */
+/* 71 */
 /***/ (function(module) {
 
 /**
@@ -6028,7 +5152,7 @@ module.exports = BitMatrix
 
 
 /***/ }),
-/* 75 */
+/* 72 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
 /**
@@ -6041,7 +5165,7 @@ module.exports = BitMatrix
  * and their number depends on the symbol version.
  */
 
-const getSymbolSize = __webpack_require__(71).getSymbolSize
+const getSymbolSize = (__webpack_require__(68).getSymbolSize)
 
 /**
  * Calculate the row/column coordinates of the center module of each alignment pattern
@@ -6117,10 +5241,10 @@ exports.getPositions = function getPositions (version) {
 
 
 /***/ }),
-/* 76 */
+/* 73 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
-const getSymbolSize = __webpack_require__(71).getSymbolSize
+const getSymbolSize = (__webpack_require__(68).getSymbolSize)
 const FINDER_PATTERN_SIZE = 7
 
 /**
@@ -6145,7 +5269,7 @@ exports.getPositions = function getPositions (version) {
 
 
 /***/ }),
-/* 77 */
+/* 74 */
 /***/ (function(__unused_webpack_module, exports) {
 
 /**
@@ -6385,10 +5509,10 @@ exports.getBestMask = function getBestMask (data, setupFormatFunc) {
 
 
 /***/ }),
-/* 78 */
+/* 75 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
-const ECLevel = __webpack_require__(72)
+const ECLevel = __webpack_require__(69)
 
 const EC_BLOCKS_TABLE = [
 // L  M  Q  H
@@ -6526,10 +5650,10 @@ exports.getTotalCodewordsCount = function getTotalCodewordsCount (version, error
 
 
 /***/ }),
-/* 79 */
+/* 76 */
 /***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
-const Polynomial = __webpack_require__(80)
+const Polynomial = __webpack_require__(77)
 
 function ReedSolomonEncoder (degree) {
   this.genPoly = undefined
@@ -6588,10 +5712,10 @@ module.exports = ReedSolomonEncoder
 
 
 /***/ }),
-/* 80 */
+/* 77 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
-const GF = __webpack_require__(81)
+const GF = __webpack_require__(78)
 
 /**
  * Multiplies two polynomials inside Galois Field
@@ -6656,7 +5780,7 @@ exports.generateECPolynomial = function generateECPolynomial (degree) {
 
 
 /***/ }),
-/* 81 */
+/* 78 */
 /***/ (function(__unused_webpack_module, exports) {
 
 const EXP_TABLE = new Uint8Array(512)
@@ -6731,14 +5855,14 @@ exports.mul = function mul (x, y) {
 
 
 /***/ }),
-/* 82 */
+/* 79 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
-const Utils = __webpack_require__(71)
-const ECCode = __webpack_require__(78)
-const ECLevel = __webpack_require__(72)
-const Mode = __webpack_require__(83)
-const VersionCheck = __webpack_require__(84)
+const Utils = __webpack_require__(68)
+const ECCode = __webpack_require__(75)
+const ECLevel = __webpack_require__(69)
+const Mode = __webpack_require__(80)
+const VersionCheck = __webpack_require__(81)
 
 // Generator polynomial used to encode version information
 const G18 = (1 << 12) | (1 << 11) | (1 << 10) | (1 << 9) | (1 << 8) | (1 << 5) | (1 << 2) | (1 << 0)
@@ -6900,11 +6024,11 @@ exports.getEncodedBits = function getEncodedBits (version) {
 
 
 /***/ }),
-/* 83 */
+/* 80 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
-const VersionCheck = __webpack_require__(84)
-const Regex = __webpack_require__(85)
+const VersionCheck = __webpack_require__(81)
+const Regex = __webpack_require__(82)
 
 /**
  * Numeric mode encodes data from the decimal digit set (0 - 9)
@@ -7073,7 +6197,7 @@ exports.from = function from (value, defaultValue) {
 
 
 /***/ }),
-/* 84 */
+/* 81 */
 /***/ (function(__unused_webpack_module, exports) {
 
 /**
@@ -7088,7 +6212,7 @@ exports.isValid = function isValid (version) {
 
 
 /***/ }),
-/* 85 */
+/* 82 */
 /***/ (function(__unused_webpack_module, exports) {
 
 const numeric = '[0-9]+'
@@ -7125,10 +6249,10 @@ exports.testAlphanumeric = function testAlphanumeric (str) {
 
 
 /***/ }),
-/* 86 */
+/* 83 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
-const Utils = __webpack_require__(71)
+const Utils = __webpack_require__(68)
 
 const G15 = (1 << 10) | (1 << 8) | (1 << 5) | (1 << 4) | (1 << 2) | (1 << 1) | (1 << 0)
 const G15_MASK = (1 << 14) | (1 << 12) | (1 << 10) | (1 << 4) | (1 << 1)
@@ -7160,17 +6284,17 @@ exports.getEncodedBits = function getEncodedBits (errorCorrectionLevel, mask) {
 
 
 /***/ }),
-/* 87 */
+/* 84 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
-const Mode = __webpack_require__(83)
-const NumericData = __webpack_require__(88)
-const AlphanumericData = __webpack_require__(89)
-const ByteData = __webpack_require__(90)
-const KanjiData = __webpack_require__(91)
-const Regex = __webpack_require__(85)
-const Utils = __webpack_require__(71)
-const dijkstra = __webpack_require__(92)
+const Mode = __webpack_require__(80)
+const NumericData = __webpack_require__(85)
+const AlphanumericData = __webpack_require__(86)
+const ByteData = __webpack_require__(87)
+const KanjiData = __webpack_require__(88)
+const Regex = __webpack_require__(82)
+const Utils = __webpack_require__(68)
+const dijkstra = __webpack_require__(89)
 
 /**
  * Returns UTF8 byte length
@@ -7496,10 +6620,10 @@ exports.rawSplit = function rawSplit (data) {
 
 
 /***/ }),
-/* 88 */
+/* 85 */
 /***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
-const Mode = __webpack_require__(83)
+const Mode = __webpack_require__(80)
 
 function NumericData (data) {
   this.mode = Mode.NUMERIC
@@ -7545,10 +6669,10 @@ module.exports = NumericData
 
 
 /***/ }),
-/* 89 */
+/* 86 */
 /***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
-const Mode = __webpack_require__(83)
+const Mode = __webpack_require__(80)
 
 /**
  * Array of characters available in alphanumeric mode
@@ -7610,10 +6734,10 @@ module.exports = AlphanumericData
 
 
 /***/ }),
-/* 90 */
+/* 87 */
 /***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
-const Mode = __webpack_require__(83)
+const Mode = __webpack_require__(80)
 
 function ByteData (data) {
   this.mode = Mode.BYTE
@@ -7646,11 +6770,11 @@ module.exports = ByteData
 
 
 /***/ }),
-/* 91 */
+/* 88 */
 /***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
-const Mode = __webpack_require__(83)
-const Utils = __webpack_require__(71)
+const Mode = __webpack_require__(80)
+const Utils = __webpack_require__(68)
 
 function KanjiData (data) {
   this.mode = Mode.KANJI
@@ -7706,7 +6830,7 @@ module.exports = KanjiData
 
 
 /***/ }),
-/* 92 */
+/* 89 */
 /***/ (function(module) {
 
 "use strict";
@@ -7878,10 +7002,10 @@ if (true) {
 
 
 /***/ }),
-/* 93 */
+/* 90 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
-const Utils = __webpack_require__(94)
+const Utils = __webpack_require__(91)
 
 function clearCanvas (ctx, canvas, size) {
   ctx.clearRect(0, 0, canvas.width, canvas.height)
@@ -7947,7 +7071,7 @@ exports.renderToDataURL = function renderToDataURL (qrData, canvas, options) {
 
 
 /***/ }),
-/* 94 */
+/* 91 */
 /***/ (function(__unused_webpack_module, exports) {
 
 function hex2rgba (hex) {
@@ -8052,10 +7176,10 @@ exports.qrToImageData = function qrToImageData (imgData, qr, opts) {
 
 
 /***/ }),
-/* 95 */
+/* 92 */
 /***/ (function(__unused_webpack_module, exports, __webpack_require__) {
 
-const Utils = __webpack_require__(94)
+const Utils = __webpack_require__(91)
 
 function getColorAttrib (color, attrib) {
   const alpha = color.a / 255
@@ -8206,30 +7330,127 @@ exports.render = function render (qrData, options, cb) {
 /******/ 		};
 /******/ 	}();
 /******/ 	
+/******/ 	/* webpack/runtime/nonce */
+/******/ 	!function() {
+/******/ 		__webpack_require__.nc = undefined;
+/******/ 	}();
+/******/ 	
 /************************************************************************/
 var __webpack_exports__ = {};
-// This entry need to be wrapped in an IIFE because it need to be in strict mode.
+// This entry needs to be wrapped in an IIFE because it needs to be in strict mode.
 !function() {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-/* harmony import */ var _babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1);
-/* harmony import */ var _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(2);
-/* harmony import */ var _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _styles_main_css__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(4);
-/* harmony import */ var jsbarcode__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(14);
-/* harmony import */ var jsbarcode__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__webpack_require__.n(jsbarcode__WEBPACK_IMPORTED_MODULE_3__);
-/* harmony import */ var qrcode__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(68);
+/* harmony import */ var _styles_main_css__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1);
+/* harmony import */ var jsbarcode__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(11);
+/* harmony import */ var jsbarcode__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(jsbarcode__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var qrcode__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(65);
 
 
 
 
- // ── BarcodeDetector ──────────────────────────────────────────
+// ── i18n ─────────────────────────────────────────────────────
+var LANG = (navigator.language || "en").startsWith("fi") ? "fi" : "en";
+var i18n = {
+  fi: {
+    heroBadge: "Natiivi selain-API",
+    heroTitle: "Web",
+    heroTitleAccent: "Viivakoodinlukija",
+    heroSubtitle: "Lue viivakoodeja kameralla natiivilla <code>BarcodeDetector</code>-rajapinnalla. Ei lisäosia, ei palvelinta – toimii kokonaan selaimessa.",
+    startCamera: "Käynnistä kamera",
+    stopCamera: "Pysäytä kamera",
+    scanning: "Skannataan\u2026",
+    tapToScan: "Käynnistä kamera skannataksesi",
+    notSupported: "BarcodeDetector-rajapintaa ei tueta tässä selaimessa. Kokeile Chromea tai Edgeä.",
+    samplesTitle: "Kokeile skannata näitä",
+    samplesDesc: "Osoita kamera johonkin näistä – ne toimivat yläpuolella olevan lukijan kanssa.",
+    codeTitle: "Minimikonfiguraatio",
+    codeDesc: "Kaikki mitä tarvitset viivakoodien lukemiseen kameralla – alle 25 rivillä.",
+    codeLang: "HTML",
+    copyBtn: "Kopioi",
+    copiedBtn: "Kopioitu!",
+    aboutTitle: "Tietoa rajapinnasta",
+    about1Title: "Natiivi suorituskyky",
+    about1Desc: "Toimii laitteistokiihdytetyllä kuvaenkäsittelyllä suoraan selaimessa – ei JavaScript-viivakoodikirjastoja tarvita.",
+    about2Title: "Yksityisyys ensin",
+    about2Desc: "Kamerakuvat eivät poistu laitteeltasi. Kaikki tunnistus tapahtuu paikallisesti ilman verkkoyhteyksiä.",
+    about3Title: "Ei riippuvuuksia",
+    about3Desc: "Yksi natiivi API-kutsu. Ei kirjastoja, ei WebAssembly-paketteja, ei polyfilleja. Toimii Chromessa ja Edgessä.",
+    about4Title: "11 formaattia",
+    about4Desc: "QR-koodi, EAN-13, EAN-8, Code 128, Code 39, Code 93, Codabar, ITF, PDF417, UPC-E, Data Matrix.",
+    compatTitle: "Yhteensopivuus",
+    compatDesc: "BarcodeDetector on Chromium-pohjainen API. Tällä hetkellä tuettu:",
+    compatSupported: "Tuettu",
+    compatPartial: "Osittainen",
+    compatNone: "Ei tuettu",
+    footerText: "Avoin l\xE4hdekoodi \xB7 MIT \xB7",
+    footerLink: "BarcodeDetector MDN-dokumentaatio",
+    installTitle: "Lisää kotinäytölle",
+    installDesc: "Tämä sovellus toimii myös offline-tilassa. Lisää se kotinäytölle saadaksesi sovelluksen kaltaisen käyttökokemuksen.",
+    installBtn: "Lisää kotinäytölle"
+  },
+  en: {
+    heroBadge: "Native Browser API",
+    heroTitle: "Web Barcode",
+    heroTitleAccent: "Reader",
+    heroSubtitle: "Scan barcodes with your camera using the native <code>BarcodeDetector</code> API. No plugins, no uploads \u2014 runs entirely in your browser.",
+    startCamera: "Start Camera",
+    stopCamera: "Stop Camera",
+    scanning: "Scanning\u2026",
+    tapToScan: "Tap Start to scan",
+    notSupported: "BarcodeDetector API not supported in this browser. Try Chrome or Edge.",
+    samplesTitle: "Try scanning these",
+    samplesDesc: "Point your camera at any of these \u2014 they work with the scanner above.",
+    codeTitle: "Minimal Setup",
+    codeDesc: "Everything you need to read barcodes with a camera \u2014 under 25 lines.",
+    codeLang: "HTML",
+    copyBtn: "Copy",
+    copiedBtn: "Copied!",
+    aboutTitle: "About the API",
+    about1Title: "Native Performance",
+    about1Desc: "Runs in the browser using hardware-accelerated image processing \u2014 no JavaScript barcode libraries needed.",
+    about2Title: "Privacy First",
+    about2Desc: "Camera frames never leave your device. All detection happens locally with zero network requests.",
+    about3Title: "Zero Dependencies",
+    about3Desc: "One native API call. No libraries, no WebAssembly bundles, no polyfills. Works in Chrome and Edge.",
+    about4Title: "11 Formats",
+    about4Desc: "QR Code, EAN-13, EAN-8, Code 128, Code 39, Code 93, Codabar, ITF, PDF417, UPC-E, Data Matrix.",
+    compatTitle: "Browser Compatibility",
+    compatDesc: "BarcodeDetector is a Chromium-based API. Currently supported in:",
+    compatSupported: "Supported",
+    compatPartial: "Partial",
+    compatNone: "Not supported",
+    footerText: "Open source \xB7 MIT \xB7",
+    footerLink: "BarcodeDetector MDN docs",
+    installTitle: "Add to Home Screen",
+    installDesc: "This app works offline too. Add it to your home screen for an app-like experience.",
+    installBtn: "Add to Home Screen"
+  }
+};
+function t(key) {
+  return (i18n[LANG] || i18n["en"])[key] || key;
+}
 
+// ── BarcodeDetector ──────────────────────────────────────────
 var FORMATS = ["code_128", "code_93", "code_39", "codabar", "data_matrix", "ean_8", "ean_13", "itf", "pdf417", "qr_code", "upc_e"];
+var FORMAT_LABELS = {
+  qr_code: "QR Code",
+  ean_13: "EAN-13",
+  ean_8: "EAN-8",
+  code_128: "Code 128",
+  code_39: "Code 39",
+  code_93: "Code 93",
+  upc_e: "UPC-E",
+  itf: "ITF",
+  pdf417: "PDF417",
+  codabar: "Codabar",
+  data_matrix: "Data Matrix"
+};
 var detector = "BarcodeDetector" in window ? new BarcodeDetector({
   formats: FORMATS
-}) : null; // ── DOM refs ─────────────────────────────────────────────────
+}) : null;
 
+// ── DOM refs ─────────────────────────────────────────────────
 var video = document.getElementById("barcodecamera");
 var startBtn = document.getElementById("startBtn");
 var scanOverlay = document.getElementById("scanOverlay");
@@ -8241,113 +7462,86 @@ var snackBadge = document.getElementById("snackBadge");
 var snackValue = document.getElementById("snackValue");
 var snackProgress = document.getElementById("snackProgress");
 var copyBtn = document.getElementById("copyBtn");
-var codeExample = document.getElementById("codeExample"); // ── State ────────────────────────────────────────────────────
+var codeExample = document.getElementById("codeExample");
+var installBanner = document.getElementById("installBanner");
+var installBtn = document.getElementById("installBtn");
 
+// ── State ────────────────────────────────────────────────────
 var detecting = false;
 var lastSnackValue = null;
-var snackTimer = null; // ── Camera ───────────────────────────────────────────────────
+var snackTimer = null;
+var deferredInstallPrompt = null;
 
+// ── Apply translations ────────────────────────────────────────
+function applyTranslations() {
+  document.documentElement.lang = LANG;
+  // Elements with data-i18n attribute
+  var els = document.querySelectorAll("[data-i18n]");
+  for (var i = 0; i < els.length; i++) {
+    var el = els[i];
+    var key = el.getAttribute("data-i18n");
+    var html = el.getAttribute("data-i18n-html");
+    if (html) {
+      el.innerHTML = t(key);
+    } else {
+      el.textContent = t(key);
+    }
+  }
+  // Special: hero subtitle uses innerHTML for <code> tag
+  var subtitle = document.querySelector(".hero__subtitle");
+  if (subtitle) subtitle.innerHTML = t("heroSubtitle");
+}
+
+// ── Camera ───────────────────────────────────────────────────
 startBtn.addEventListener("click", toggleCamera);
-
 function toggleCamera() {
-  return _toggleCamera.apply(this, arguments);
+  if (video.srcObject) {
+    stopCamera();
+  } else {
+    startCamera();
+  }
 }
-
-function _toggleCamera() {
-  _toggleCamera = (0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_0__["default"])( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default().mark(function _callee() {
-    return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default().wrap(function _callee$(_context) {
-      while (1) {
-        switch (_context.prev = _context.next) {
-          case 0:
-            if (!video.srcObject) {
-              _context.next = 4;
-              break;
-            }
-
-            stopCamera();
-            _context.next = 6;
-            break;
-
-          case 4:
-            _context.next = 6;
-            return startCamera();
-
-          case 6:
-          case "end":
-            return _context.stop();
-        }
-      }
-    }, _callee);
-  }));
-  return _toggleCamera.apply(this, arguments);
-}
-
 function startCamera() {
-  return _startCamera.apply(this, arguments);
-}
-
-function _startCamera() {
-  _startCamera = (0,_babel_runtime_helpers_asyncToGenerator__WEBPACK_IMPORTED_MODULE_0__["default"])( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default().mark(function _callee2() {
-    return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_1___default().wrap(function _callee2$(_context2) {
-      while (1) {
-        switch (_context2.prev = _context2.next) {
-          case 0:
-            if (detector) {
-              _context2.next = 3;
-              break;
-            }
-
-            compatWarn.hidden = false;
-            return _context2.abrupt("return");
-
-          case 3:
-            _context2.prev = 3;
-            _context2.next = 6;
-            return navigator.mediaDevices.getUserMedia({
-              audio: false,
-              video: {
-                facingMode: "environment"
-              }
-            });
-
-          case 6:
-            video.srcObject = _context2.sent;
-            startBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg> Stop Camera';
-            setStatus("Scanning\u2026");
-            _context2.next = 14;
-            break;
-
-          case 11:
-            _context2.prev = 11;
-            _context2.t0 = _context2["catch"](3);
-            setStatus("Camera access denied");
-
-          case 14:
-          case "end":
-            return _context2.stop();
-        }
-      }
-    }, _callee2, null, [[3, 11]]);
-  }));
-  return _startCamera.apply(this, arguments);
-}
-
-function stopCamera() {
-  video.srcObject && video.srcObject.getTracks().forEach(function (t) {
-    t.stop();
+  if (!detector) {
+    compatWarn.hidden = false;
+    return;
+  }
+  navigator.mediaDevices.getUserMedia({
+    audio: false,
+    video: {
+      facingMode: "environment"
+    }
+  }).then(function (stream) {
+    video.srcObject = stream;
+    startBtn.innerHTML = svgPause() + " " + t("stopCamera");
+    setStatus(t("scanning"));
+  })["catch"](function () {
+    setStatus(LANG === "fi" ? "Kameran käyttö estetty" : "Camera access denied");
   });
-  video.srcObject = null;
+}
+function stopCamera() {
+  if (video.srcObject) {
+    video.srcObject.getTracks().forEach(function (t) {
+      t.stop();
+    });
+    video.srcObject = null;
+  }
   detecting = false;
   scanOverlay.classList.remove("is-active");
-  startBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg> Start Camera';
-  setStatus("Tap Start to scan");
+  startBtn.innerHTML = svgCamera() + " " + t("startCamera");
+  setStatus(t("tapToScan"));
 }
-
 function setStatus(text) {
   statusBadge.textContent = text;
-} // ── Detection loop ────────────────────────────────────────────
+}
+function svgCamera() {
+  return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>';
+}
+function svgPause() {
+  return '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>';
+}
 
-
+// ── Detection loop ────────────────────────────────────────────
 video.addEventListener("play", function () {
   detecting = true;
   scanOverlay.classList.add("is-active");
@@ -8356,14 +7550,16 @@ video.addEventListener("play", function () {
 video.addEventListener("pause", function () {
   scanOverlay.classList.remove("is-active");
 });
-
 function detect() {
   if (!detecting || video.paused || video.ended) return;
   detector.detect(video).then(function (barcodes) {
     if (barcodes.length > 0 && barcodes[0].rawValue !== lastSnackValue) {
       var bc = barcodes[0];
       lastSnackValue = bc.rawValue;
+      playDetectSound();
       showSnackbar(bc.rawValue, bc.format);
+      videoWrapper.classList.remove("detected");
+      videoWrapper.offsetWidth; // force reflow so animation re-triggers
       videoWrapper.classList.add("detected");
       video.pause();
       setTimeout(function () {
@@ -8373,58 +7569,105 @@ function detect() {
       }, 2000);
       return;
     }
-
     requestAnimationFrame(detect);
   })["catch"](function () {
     requestAnimationFrame(detect);
   });
-} // ── Snackbar ─────────────────────────────────────────────────
+}
 
+// ── Detection sound (Web Audio API) ──────────────────────────
+var audioCtx = null;
+function playDetectSound() {
+  try {
+    var tone = function tone(freq, startTime, duration, gain) {
+      var osc = audioCtx.createOscillator();
+      var gainNode = audioCtx.createGain();
+      osc.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(freq, startTime);
+      gainNode.gain.setValueAtTime(0, startTime);
+      gainNode.gain.linearRampToValueAtTime(gain, startTime + 0.01);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+      osc.start(startTime);
+      osc.stop(startTime + duration);
+    };
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    // Two-tone pleasant "ping": high note then a softer harmonic
+    var now = audioCtx.currentTime;
+    tone(1047, now, 0.18, 0.30); // C6 — main ping
+    tone(1319, now + 0.09, 0.14, 0.18); // E6 — harmonic follow
+  } catch (e) {
+    // AudioContext blocked or unavailable — silently ignore
+  }
+}
 
+// ── Snackbar ─────────────────────────────────────────────────
 function showSnackbar(value, format) {
   clearTimeout(snackTimer);
-  snackBadge.textContent = format.replace(/_/g, " ");
-  snackValue.textContent = value; // Reset progress animation by toggling class
-
+  snackBadge.textContent = FORMAT_LABELS[format] || format.replace(/_/g, " ");
+  snackValue.textContent = value;
   snackbar.classList.remove("is-visible");
   snackProgress.style.animation = "none";
-  snackbar.hidden = false; // Force reflow so the transition plays from the bottom
-
+  snackbar.hidden = false;
   snackbar.offsetHeight; // eslint-disable-line no-unused-expressions
-
   snackProgress.style.animation = "";
   snackbar.classList.add("is-visible");
   snackTimer = setTimeout(hideSnackbar, 4000);
 }
-
 function hideSnackbar() {
   snackbar.classList.remove("is-visible");
   snackbar.addEventListener("transitionend", function handler() {
     snackbar.hidden = true;
     snackbar.removeEventListener("transitionend", handler);
   });
-} // ── Copy button ───────────────────────────────────────────────
+}
 
-
+// ── Copy button ───────────────────────────────────────────────
 copyBtn.addEventListener("click", function () {
-  var text = codeExample.textContent; // Decode HTML entities before copying
-
   var ta = document.createElement("textarea");
-  ta.value = text;
+  ta.value = codeExample.textContent;
   document.body.appendChild(ta);
   ta.select();
   document.execCommand("copy");
   document.body.removeChild(ta);
-  copyBtn.textContent = "Copied!";
+  copyBtn.textContent = t("copiedBtn");
   copyBtn.classList.add("copied");
   setTimeout(function () {
-    copyBtn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy';
+    copyBtn.innerHTML = svgCopy() + " " + t("copyBtn");
     copyBtn.classList.remove("copied");
   }, 2000);
-}); // ── Sample barcode generation ─────────────────────────────────
+});
+function svgCopy() {
+  return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+}
 
+// ── PWA install prompt ────────────────────────────────────────
+window.addEventListener("beforeinstallprompt", function (e) {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  if (installBanner) installBanner.hidden = false;
+});
+window.addEventListener("appinstalled", function () {
+  if (installBanner) installBanner.hidden = true;
+  deferredInstallPrompt = null;
+});
+if (installBtn) {
+  installBtn.addEventListener("click", function () {
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.then(function () {
+      deferredInstallPrompt = null;
+      if (installBanner) installBanner.hidden = true;
+    });
+  });
+}
+
+// ── Sample barcode generation ─────────────────────────────────
 function generateSamples() {
-  var barcodeOpts = {
+  var opts = {
     lineColor: "#e2e8f0",
     background: "transparent",
     displayValue: true,
@@ -8435,7 +7678,10 @@ function generateSamples() {
     width: 1.4,
     height: 52
   };
-  qrcode__WEBPACK_IMPORTED_MODULE_4__.toCanvas(document.getElementById("qr-canvas"), "https://web-viivakoodi.vercel.app/", {
+  function o(extra) {
+    return Object.assign({}, opts, extra);
+  }
+  qrcode__WEBPACK_IMPORTED_MODULE_2__.toCanvas(document.getElementById("qr-canvas"), "https://web-viivakoodi.vercel.app/", {
     width: 160,
     margin: 1,
     color: {
@@ -8443,27 +7689,45 @@ function generateSamples() {
       light: "#00000000"
     }
   })["catch"](function () {});
-  jsbarcode__WEBPACK_IMPORTED_MODULE_3___default()("#ean13-svg", "5901234123457", Object.assign({}, barcodeOpts, {
+  jsbarcode__WEBPACK_IMPORTED_MODULE_1___default()("#ean13-svg", "5901234123457", o({
     format: "EAN13"
   }));
-  jsbarcode__WEBPACK_IMPORTED_MODULE_3___default()("#code128-svg", "WEB-BARCODE", Object.assign({}, barcodeOpts, {
+  jsbarcode__WEBPACK_IMPORTED_MODULE_1___default()("#code128-svg", "WEB-BARCODE", o({
     format: "CODE128"
   }));
-  jsbarcode__WEBPACK_IMPORTED_MODULE_3___default()("#code39-svg", "CODE39", Object.assign({}, barcodeOpts, {
+  jsbarcode__WEBPACK_IMPORTED_MODULE_1___default()("#code39-svg", "CODE39", o({
     format: "CODE39"
   }));
-  jsbarcode__WEBPACK_IMPORTED_MODULE_3___default()("#ean8-svg", "96385074", Object.assign({}, barcodeOpts, {
+  jsbarcode__WEBPACK_IMPORTED_MODULE_1___default()("#ean8-svg", "96385074", o({
     format: "EAN8"
   }));
-} // ── Init ──────────────────────────────────────────────────────
+}
 
+// ── Service worker registration ───────────────────────────────
+function registerSW() {
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/sw.js")["catch"](function () {});
+  }
+}
 
+// ── Init ──────────────────────────────────────────────────────
 window.addEventListener("DOMContentLoaded", function () {
+  applyTranslations();
   generateSamples();
+  registerSW();
 
+  // Set initial button state with SVG
+  startBtn.innerHTML = svgCamera() + " " + t("startCamera");
+  copyBtn.innerHTML = svgCopy() + " " + t("copyBtn");
+  setStatus(t("tapToScan"));
   if (!detector) {
     compatWarn.hidden = false;
     startBtn.disabled = true;
+  }
+
+  // Check if URL has ?action=scan shortcut (PWA shortcut)
+  if (window.location.search.indexOf("action=scan") !== -1 && detector) {
+    startCamera();
   }
 });
 }();

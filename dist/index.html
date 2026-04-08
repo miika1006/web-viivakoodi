@@ -1,53 +1,76 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fi">
 	<head>
 		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<title>Web Barcode Reader — BarcodeDetector API Demo</title>
-		<meta name="description" content="Scan barcodes instantly with your browser camera. A demo of the native BarcodeDetector Web API — no installs, no backend, no uploads. Supports QR Code, EAN-13, Code 128, Code 39 and more." />
+		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+		<!-- Primary SEO (Finnish default) -->
+		<title>Viivakoodinlukija – Lue viivakoodeja selaimessa | BarcodeDetector API</title>
+		<meta name="description" content="Ilmainen selainpohjainen viivakoodinlukija. Lue QR-koodeja, EAN-13, Code 128 ja muita viivakoodeja suoraan kameralla – ei sovellusta tarvita. Käyttää natiivia BarcodeDetector-rajapintaa." />
 		<meta name="robots" content="index, follow" />
+		<meta name="keywords" content="viivakoodinlukija, qr-koodi lukija, BarcodeDetector API, selain viivakoodi, kamera lukija, ean-13, code 128, barcode scanner, web barcode reader" />
+		<meta name="author" content="Miika" />
+		<meta name="theme-color" content="#818cf8" />
+
+		<!-- Hreflang for bilingual SEO -->
 		<link rel="canonical" href="https://web-viivakoodi.vercel.app/" />
+		<link rel="alternate" hreflang="fi" href="https://web-viivakoodi.vercel.app/" />
+		<link rel="alternate" hreflang="en" href="https://web-viivakoodi.vercel.app/" />
+		<link rel="alternate" hreflang="x-default" href="https://web-viivakoodi.vercel.app/" />
 
 		<!-- Open Graph -->
 		<meta property="og:type" content="website" />
 		<meta property="og:url" content="https://web-viivakoodi.vercel.app/" />
-		<meta property="og:title" content="Web Barcode Reader — BarcodeDetector API Demo" />
-		<meta property="og:description" content="Scan QR codes, EAN-13, Code 128 and more directly in your browser. Uses the native BarcodeDetector API — no plugins required." />
+		<meta property="og:title" content="Viivakoodinlukija – Lue viivakoodeja selaimessa" />
+		<meta property="og:description" content="Lue QR-koodeja, EAN-13, Code 128 ja muita suoraan selaimessa kameralla. Ei sovellusta tarvita. Käyttää natiivia BarcodeDetector Web API:a." />
 		<meta property="og:image" content="https://web-viivakoodi.vercel.app/og-image.png" />
-		<meta property="og:site_name" content="Web Barcode Reader" />
-		<meta property="og:locale" content="en_US" />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+		<meta property="og:locale" content="fi_FI" />
+		<meta property="og:locale:alternate" content="en_US" />
+		<meta property="og:site_name" content="Viivakoodinlukija" />
 
 		<!-- Twitter Card -->
 		<meta name="twitter:card" content="summary_large_image" />
-		<meta name="twitter:title" content="Web Barcode Reader — BarcodeDetector API Demo" />
-		<meta name="twitter:description" content="Scan QR codes, EAN-13, Code 128 and more directly in your browser. No installs required." />
+		<meta name="twitter:title" content="Viivakoodinlukija – Lue viivakoodeja selaimessa" />
+		<meta name="twitter:description" content="Lue QR-koodeja, EAN-13, Code 128 ja muita suoraan selaimessa. Natiivi BarcodeDetector API – ei lisäosia." />
 		<meta name="twitter:image" content="https://web-viivakoodi.vercel.app/og-image.png" />
 
-		<!-- Additional SEO -->
-		<meta name="keywords" content="barcode scanner, qr code reader, BarcodeDetector API, web barcode, browser camera, javascript barcode, ean-13, code 128" />
-		<meta name="author" content="Miika" />
-		<meta name="theme-color" content="#08080f" />
+		<!-- PWA -->
+		<link rel="manifest" href="manifest.json" />
+		<meta name="mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+		<meta name="apple-mobile-web-app-title" content="Viivakoodi" />
+		<link rel="apple-touch-icon" href="icons/icon-180.png" />
+
+		<!-- Favicon -->
+		<link rel="icon" type="image/svg+xml" href="icons/icon.svg" />
+		<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
 
 		<!-- JSON-LD Structured Data -->
 		<script type="application/ld+json">
 		{
 			"@context": "https://schema.org",
 			"@type": "WebApplication",
-			"name": "Web Barcode Reader",
+			"name": "Viivakoodinlukija",
+			"alternateName": "Web Barcode Reader",
 			"url": "https://web-viivakoodi.vercel.app/",
-			"description": "A browser-native barcode scanner demo using the BarcodeDetector API. Supports QR Code, EAN-13, Code 128, Code 39, EAN-8 and more formats.",
-			"applicationCategory": "DeveloperApplication",
+			"description": "Selainpohjainen viivakoodinlukija natiivilla BarcodeDetector-rajapinnalla. Tukee QR-koodia, EAN-13, Code 128, Code 39, EAN-8 ja muita formaatteja.",
+			"applicationCategory": "UtilitiesApplication",
 			"operatingSystem": "Any",
-			"browserRequirements": "Requires Chrome 88+ or Edge 88+",
+			"browserRequirements": "Vaatii Chrome 88+ tai Edge 88+",
+			"inLanguage": ["fi", "en"],
 			"offers": {
 				"@type": "Offer",
 				"price": "0",
-				"priceCurrency": "USD"
+				"priceCurrency": "EUR"
 			},
 			"author": {
 				"@type": "Person",
 				"name": "Miika"
-			}
+			},
+			"featureList": "QR Code, EAN-13, EAN-8, Code 128, Code 39, Code 93, Codabar, ITF, PDF417, UPC-E, Data Matrix"
 		}
 		</script>
 
@@ -57,19 +80,19 @@
 
 		<header class="hero">
 			<div class="hero__inner">
-				<div class="hero__badge">Native Browser API</div>
-				<h1 class="hero__title">Web Barcode <span class="gradient-text">Reader</span></h1>
-				<p class="hero__subtitle">
-					Scan barcodes with your camera using the native <code>BarcodeDetector</code> API.
-					No plugins, no uploads — runs entirely in your browser.
-				</p>
+				<div class="hero__badge" data-i18n="heroBadge">Natiivi selain-API</div>
+				<h1 class="hero__title">
+					<span data-i18n="heroTitle">Web</span>
+					<span class="gradient-text" data-i18n="heroTitleAccent">Viivakoodinlukija</span>
+				</h1>
+				<p class="hero__subtitle"></p>
 			</div>
 		</header>
 
 		<main>
 
 			<!-- SCANNER -->
-			<section class="scanner-section" aria-label="Barcode scanner">
+			<section class="scanner-section" aria-label="Viivakoodinlukija">
 				<div class="scanner-card glass-card">
 					<div class="video-wrapper" id="videoWrapper">
 						<video id="barcodecamera" autoplay muted playsinline></video>
@@ -79,31 +102,40 @@
 								<span></span><span></span><span></span><span></span>
 							</div>
 						</div>
-						<div class="status-badge" id="statusBadge">Tap Start to scan</div>
+						<div class="status-badge" id="statusBadge"></div>
 					</div>
 					<div class="scanner-controls">
-						<button class="btn btn--primary" id="startBtn">
-							<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-							Start Camera
-						</button>
+						<button class="btn btn--primary" id="startBtn" type="button"></button>
 						<div class="compat-warning" id="compatWarn" hidden>
 							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-							BarcodeDetector API not supported in this browser. Try Chrome or Edge.
+							<span data-i18n="notSupported">BarcodeDetector-rajapintaa ei tueta tässä selaimessa.</span>
 						</div>
 					</div>
 				</div>
 			</section>
 
+			<!-- PWA INSTALL BANNER -->
+			<div class="install-banner glass-card" id="installBanner" hidden>
+				<div class="install-banner__icon" aria-hidden="true">
+					<img src="icons/icon-192.png" width="48" height="48" alt="" />
+				</div>
+				<div class="install-banner__text">
+					<strong data-i18n="installTitle">Lisää kotinäytölle</strong>
+					<p data-i18n="installDesc">Tämä sovellus toimii myös offline-tilassa.</p>
+				</div>
+				<button class="btn btn--primary install-banner__btn" id="installBtn" type="button" data-i18n="installBtn">Lisää kotinäytölle</button>
+			</div>
+
 			<!-- SAMPLE BARCODES -->
-			<section class="samples-section" aria-label="Sample barcodes to scan">
+			<section class="samples-section" aria-labelledby="samples-heading">
 				<div class="section-header">
-					<h2>Try scanning these</h2>
-					<p class="section-desc">Point your camera at any of these — they work with the scanner above.</p>
+					<h2 id="samples-heading" data-i18n="samplesTitle">Kokeile skannata näitä</h2>
+					<p class="section-desc" data-i18n="samplesDesc">Osoita kamera johonkin näistä.</p>
 				</div>
 				<div class="bento-grid">
 					<div class="sample-card glass-card">
 						<h3>QR Code</h3>
-						<p class="sample-value">https://web-viivakoodi.vercel.app/</p>
+						<p class="sample-value">web-viivakoodi.vercel.app</p>
 						<div class="sample-canvas-wrap">
 							<canvas id="qr-canvas"></canvas>
 						</div>
@@ -117,7 +149,7 @@
 					</div>
 					<div class="sample-card glass-card">
 						<h3>Code 128</h3>
-						<p class="sample-value">WEB-BARCODE-128</p>
+						<p class="sample-value">WEB-BARCODE</p>
 						<div class="sample-canvas-wrap">
 							<svg id="code128-svg"></svg>
 						</div>
@@ -140,18 +172,15 @@
 			</section>
 
 			<!-- CODE EXAMPLE -->
-			<section class="code-section" aria-label="Minimal code example">
+			<section class="code-section" aria-labelledby="code-heading">
 				<div class="section-header">
-					<h2>Minimal Setup</h2>
-					<p class="section-desc">Everything you need to read barcodes with a camera — under 25 lines.</p>
+					<h2 id="code-heading" data-i18n="codeTitle">Minimikonfiguraatio</h2>
+					<p class="section-desc" data-i18n="codeDesc">Kaikki mitä tarvitset.</p>
 				</div>
 				<div class="code-card glass-card">
 					<div class="code-card__header">
-						<span class="code-lang">HTML</span>
-						<button class="copy-btn" id="copyBtn" aria-label="Copy code to clipboard">
-							<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-							Copy
-						</button>
+						<span class="code-lang" data-i18n="codeLang">HTML</span>
+						<button class="copy-btn" id="copyBtn" type="button" aria-label="Copy code"></button>
 					</div>
 					<pre><code id="codeExample">&lt;!DOCTYPE html&gt;
 &lt;html&gt;
@@ -192,31 +221,152 @@
 				</div>
 			</section>
 
-			<!-- ABOUT -->
-			<section class="about-section" aria-label="About the BarcodeDetector API">
+			<!-- BROWSER COMPATIBILITY -->
+			<section class="compat-section" aria-labelledby="compat-heading">
 				<div class="section-header">
-					<h2>About the API</h2>
+					<h2 id="compat-heading" data-i18n="compatTitle">Yhteensopivuus</h2>
+					<p class="section-desc" data-i18n="compatDesc">BarcodeDetector on Chromium-pohjainen API.</p>
+				</div>
+				<div class="compat-grid">
+					<!-- Supported -->
+					<div class="compat-card compat-card--yes glass-card">
+						<div class="compat-card__browser">
+							<svg class="browser-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 2a10 10 0 0 1 10 10M2 12a10 10 0 0 1 10-10" stroke="currentColor" stroke-width="1.5" fill="none"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg>
+							<strong>Chrome</strong>
+						</div>
+						<span class="compat-badge compat-badge--yes">&#10003; 88+</span>
+						<p>Android, Windows, macOS, Linux</p>
+					</div>
+					<div class="compat-card compat-card--yes glass-card">
+						<div class="compat-card__browser">
+							<svg class="browser-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18M3 21L21 3" stroke="none"/><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 12h8M12 8v8" stroke="currentColor" stroke-width="1.5"/></svg>
+							<strong>Edge</strong>
+						</div>
+						<span class="compat-badge compat-badge--yes">&#10003; 88+</span>
+						<p>Windows, macOS, Android, iOS</p>
+					</div>
+					<div class="compat-card compat-card--yes glass-card">
+						<div class="compat-card__browser">
+							<svg class="browser-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 12h8M12 8v8" stroke="currentColor" stroke-width="1.5"/></svg>
+							<strong>Samsung Internet</strong>
+						</div>
+						<span class="compat-badge compat-badge--yes">&#10003; 13+</span>
+						<p>Samsung Android</p>
+					</div>
+					<div class="compat-card compat-card--yes glass-card">
+						<div class="compat-card__browser">
+							<svg class="browser-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+							<strong>Opera</strong>
+						</div>
+						<span class="compat-badge compat-badge--yes">&#10003; 74+</span>
+						<p>Windows, macOS, Android</p>
+					</div>
+					<!-- Not supported -->
+					<div class="compat-card compat-card--no glass-card">
+						<div class="compat-card__browser">
+							<svg class="browser-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M9 9l6 6M15 9l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+							<strong>Firefox</strong>
+						</div>
+						<span class="compat-badge compat-badge--no" data-i18n="compatNone">Ei tuettu</span>
+						<p>Windows, macOS, Android, iOS</p>
+					</div>
+					<div class="compat-card compat-card--no glass-card">
+						<div class="compat-card__browser">
+							<svg class="browser-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M9 9l6 6M15 9l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+							<strong>Safari</strong>
+						</div>
+						<span class="compat-badge compat-badge--no" data-i18n="compatNone">Ei tuettu</span>
+						<p>macOS, iOS, iPadOS</p>
+					</div>
+					<div class="compat-card compat-card--no glass-card">
+						<div class="compat-card__browser">
+							<svg class="browser-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M9 9l6 6M15 9l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+							<strong>iOS Chrome / Firefox</strong>
+						</div>
+						<span class="compat-badge compat-badge--no" data-i18n="compatNone">Ei tuettu</span>
+						<p>iOS (k&#228;ytt&#228;&#228; WebKiti&#228;)</p>
+					</div>
+				</div>
+
+				<!-- Device summary table -->
+				<div class="device-table-wrap glass-card">
+					<table class="device-table">
+						<thead>
+							<tr>
+								<th>Platform / Alusta</th>
+								<th>Chrome</th>
+								<th>Edge</th>
+								<th>Firefox</th>
+								<th>Safari</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td>Android</td>
+								<td class="td-yes">&#10003;</td>
+								<td class="td-yes">&#10003;</td>
+								<td class="td-no">&#10007;</td>
+								<td class="td-na">—</td>
+							</tr>
+							<tr>
+								<td>Windows</td>
+								<td class="td-yes">&#10003;</td>
+								<td class="td-yes">&#10003;</td>
+								<td class="td-no">&#10007;</td>
+								<td class="td-na">—</td>
+							</tr>
+							<tr>
+								<td>macOS</td>
+								<td class="td-yes">&#10003;</td>
+								<td class="td-yes">&#10003;</td>
+								<td class="td-no">&#10007;</td>
+								<td class="td-no">&#10007;</td>
+							</tr>
+							<tr>
+								<td>Linux</td>
+								<td class="td-yes">&#10003;</td>
+								<td class="td-yes">&#10003;</td>
+								<td class="td-no">&#10007;</td>
+								<td class="td-na">—</td>
+							</tr>
+							<tr>
+								<td>iOS / iPadOS</td>
+								<td class="td-no">&#10007;</td>
+								<td class="td-no">&#10007;</td>
+								<td class="td-no">&#10007;</td>
+								<td class="td-no">&#10007;</td>
+							</tr>
+						</tbody>
+					</table>
+					<p class="device-table__note">iOS ei tue BarcodeDetector-rajapintaa millään selaimella, koska kaikki iOS-selaimet k&#228;ytt&#228;v&#228;t Applen WebKit-moottoria.<br/>iOS does not support BarcodeDetector in any browser, as all iOS browsers use Apple's WebKit engine.</p>
+				</div>
+			</section>
+
+			<!-- ABOUT -->
+			<section class="about-section" aria-labelledby="about-heading">
+				<div class="section-header">
+					<h2 id="about-heading" data-i18n="aboutTitle">Tietoa rajapinnasta</h2>
 				</div>
 				<div class="about-grid">
 					<div class="about-card glass-card">
-						<div class="about-card__icon" aria-hidden="true">⚡</div>
-						<h3>Native Performance</h3>
-						<p>Runs in the browser using hardware-accelerated image processing — no JavaScript barcode libraries needed.</p>
+						<div class="about-card__icon" aria-hidden="true">&#9889;</div>
+						<h3 data-i18n="about1Title">Natiivi suorituskyky</h3>
+						<p data-i18n="about1Desc"></p>
 					</div>
 					<div class="about-card glass-card">
-						<div class="about-card__icon" aria-hidden="true">🔒</div>
-						<h3>Privacy First</h3>
-						<p>Camera frames never leave your device. All detection happens locally with zero network requests.</p>
+						<div class="about-card__icon" aria-hidden="true">&#128274;</div>
+						<h3 data-i18n="about2Title">Yksityisyys ensin</h3>
+						<p data-i18n="about2Desc"></p>
 					</div>
 					<div class="about-card glass-card">
-						<div class="about-card__icon" aria-hidden="true">📦</div>
-						<h3>Zero Dependencies</h3>
-						<p>One native API call. No libraries, no WebAssembly bundles, no polyfills. Works in Chrome and Edge.</p>
+						<div class="about-card__icon" aria-hidden="true">&#128230;</div>
+						<h3 data-i18n="about3Title">Ei riippuvuuksia</h3>
+						<p data-i18n="about3Desc"></p>
 					</div>
 					<div class="about-card glass-card">
-						<div class="about-card__icon" aria-hidden="true">🔍</div>
-						<h3>11 Formats</h3>
-						<p>QR Code, EAN-13, EAN-8, Code 128, Code 39, Code 93, Codabar, ITF, PDF417, UPC-E, Data Matrix.</p>
+						<div class="about-card__icon" aria-hidden="true">&#128269;</div>
+						<h3 data-i18n="about4Title">11 formaattia</h3>
+						<p data-i18n="about4Desc"></p>
 					</div>
 				</div>
 			</section>
@@ -224,7 +374,10 @@
 		</main>
 
 		<footer class="site-footer">
-			<p>Open source · MIT License · <a href="https://developer.mozilla.org/en-US/docs/Web/API/BarcodeDetector" target="_blank" rel="noopener noreferrer">BarcodeDetector MDN docs</a></p>
+			<p>
+				<span data-i18n="footerText">Avoin l&#228;hdekoodi &middot; MIT &middot;</span>
+				<a href="https://developer.mozilla.org/en-US/docs/Web/API/BarcodeDetector" target="_blank" rel="noopener noreferrer" data-i18n="footerLink">BarcodeDetector MDN-dokumentaatio</a>
+			</p>
 		</footer>
 
 		<!-- SNACKBAR -->
