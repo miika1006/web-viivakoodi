@@ -290,9 +290,231 @@ function hideSnackbar() {
 }
 
 // ── Copy button ───────────────────────────────────────────────
+var CODE_RAW = [
+	'<!DOCTYPE html>',
+	'<html>',
+	'<head>',
+	'  <meta charset="utf-8" />',
+	'  <title>Barcode Scanner</title>',
+	'</head>',
+	'<body>',
+	'  <video id="v" autoplay muted playsinline style="width:100%"></video>',
+	'',
+	'  <script>',
+	"    const video = document.getElementById('v');",
+	'',
+	'    navigator.mediaDevices',
+	"      .getUserMedia({ video: { facingMode: 'environment' } })",
+	'      .then(stream => (video.srcObject = stream));',
+	'',
+	'    const detector = new BarcodeDetector({',
+	"      formats: ['qr_code', 'ean_13', 'code_128']",
+	'    });',
+	'',
+	'    function scan() {',
+	'      if (video.paused) return;',
+	'      detector.detect(video).then(codes => {',
+	'        if (codes.length > 0) {',
+	"          alert(codes[0].format + ': ' + codes[0].rawValue);",
+	'          video.pause();',
+	'          setTimeout(() => video.play(), 2000);',
+	'        }',
+	'      });',
+	'      requestAnimationFrame(scan);',
+	'    }',
+	'',
+	"    video.addEventListener('play', () => setTimeout(scan, 500));",
+	'  </script>',
+	'</body>',
+	'</html>',
+].join('\n');
+
+function highlightCode(code) {
+	function esc(s) {
+		return s
+			.replace(/&/g, "&amp;")
+			.replace(/</g, "&lt;")
+			.replace(/>/g, "&gt;")
+			.replace(/"/g, "&quot;");
+	}
+	function sp(cls, s) {
+		return '<span class="hl-' + cls + '">' + esc(s) + "</span>";
+	}
+
+	var JS_KEYWORDS = ["const", "let", "var", "function", "return", "if",
+		"else", "new", "for", "while", "of", "in", "typeof"];
+	var JS_BUILTINS = ["document", "navigator", "window", "console",
+		"setTimeout", "requestAnimationFrame", "BarcodeDetector",
+		"alert", "mediaDevices", "serviceWorker", "Promise"];
+
+	var out = "";
+	var pos = 0;
+	var inScript = false;
+	var n = code.length;
+
+	while (pos < n) {
+		// Script end tag
+		if (inScript && code.slice(pos, pos + 9) === "</script>") {
+			out += sp("tag-bracket", "</") + sp("tag-name", "script") + sp("tag-bracket", ">");
+			pos += 9;
+			inScript = false;
+			continue;
+		}
+
+		if (inScript) {
+			var ch = code[pos];
+
+			// Line comment
+			if (code.slice(pos, pos + 2) === "//") {
+				var end = code.indexOf("\n", pos);
+				if (end === -1) end = n;
+				out += sp("comment", code.slice(pos, end));
+				pos = end;
+				continue;
+			}
+
+			// Single-quoted string
+			if (ch === "'") {
+				var j = pos + 1;
+				while (j < n && code[j] !== "'" && code[j] !== "\n") {
+					if (code[j] === "\\") j++;
+					j++;
+				}
+				if (j < n && code[j] === "'") j++;
+				out += sp("string", code.slice(pos, j));
+				pos = j;
+				continue;
+			}
+
+			// Backtick string
+			if (ch === "`") {
+				var j = pos + 1;
+				while (j < n && code[j] !== "`") {
+					if (code[j] === "\\") j++;
+					j++;
+				}
+				if (j < n) j++;
+				out += sp("string", code.slice(pos, j));
+				pos = j;
+				continue;
+			}
+
+			// Arrow =>
+			if (code.slice(pos, pos + 2) === "=>") {
+				out += sp("keyword", "=>");
+				pos += 2;
+				continue;
+			}
+
+			// Identifier / keyword / builtin
+			if (/[a-zA-Z_$]/.test(ch)) {
+				var j = pos;
+				while (j < n && /[a-zA-Z0-9_$]/.test(code[j])) j++;
+				var word = code.slice(pos, j);
+				if (JS_KEYWORDS.indexOf(word) !== -1) {
+					out += sp("keyword", word);
+				} else if (JS_BUILTINS.indexOf(word) !== -1) {
+					out += sp("builtin", word);
+				} else {
+					out += esc(word);
+				}
+				pos = j;
+				continue;
+			}
+
+			// Number
+			if (/[0-9]/.test(ch)) {
+				var j = pos;
+				while (j < n && /[0-9.]/.test(code[j])) j++;
+				out += sp("number", code.slice(pos, j));
+				pos = j;
+				continue;
+			}
+
+			// Dot accessor — don't colour, but parse so identifiers after . aren't matched as builtins
+			out += esc(ch);
+			pos++;
+
+		} else {
+			// HTML mode
+			var ch = code[pos];
+
+			// DOCTYPE
+			if (code.slice(pos, pos + 9).toUpperCase() === "<!DOCTYPE") {
+				var end = code.indexOf(">", pos);
+				if (end === -1) end = n - 1;
+				out += sp("doctype", code.slice(pos, end + 1));
+				pos = end + 1;
+				continue;
+			}
+
+			// Opening / closing tag
+			if (ch === "<") {
+				var isClose = code[pos + 1] === "/";
+				var nameStart = pos + (isClose ? 2 : 1);
+				var j = nameStart;
+				while (j < n && /[a-zA-Z0-9-]/.test(code[j])) j++;
+				var tagName = code.slice(nameStart, j);
+
+				if (tagName === "script") inScript = !isClose;
+
+				out += sp("tag-bracket", isClose ? "</" : "<");
+				out += sp("tag-name", tagName);
+				pos = j;
+
+				// Attributes
+				while (pos < n && code[pos] !== ">") {
+					// Self-close
+					if (code.slice(pos, pos + 2) === "/>") {
+						out += sp("tag-bracket", "/>");
+						pos += 2;
+						break;
+					}
+					// Attribute name
+					if (/[a-zA-Z_:@*#.]/.test(code[pos])) {
+						var k = pos;
+						while (k < n && /[a-zA-Z0-9_:.-]/.test(code[k])) k++;
+						out += sp("attr-name", code.slice(pos, k));
+						pos = k;
+						continue;
+					}
+					// = sign
+					if (code[pos] === "=") {
+						out += sp("tag-bracket", "=");
+						pos++;
+						continue;
+					}
+					// Attribute value (double-quoted)
+					if (code[pos] === '"') {
+						var k = code.indexOf('"', pos + 1);
+						if (k === -1) k = n - 1;
+						out += sp("attr-value", code.slice(pos, k + 1));
+						pos = k + 1;
+						continue;
+					}
+					out += esc(code[pos]);
+					pos++;
+				}
+
+				// Closing >
+				if (pos < n && code[pos] === ">") {
+					out += sp("tag-bracket", ">");
+					pos++;
+				}
+				continue;
+			}
+
+			out += esc(ch);
+			pos++;
+		}
+	}
+
+	return out;
+}
+
 copyBtn.addEventListener("click", function() {
 	var ta = document.createElement("textarea");
-	ta.value = codeExample.textContent;
+	ta.value = CODE_RAW;
 	document.body.appendChild(ta);
 	ta.select();
 	document.execCommand("copy");
@@ -373,6 +595,9 @@ window.addEventListener("DOMContentLoaded", function() {
 	applyTranslations();
 	generateSamples();
 	registerSW();
+
+	// Render syntax-highlighted code example
+	codeExample.innerHTML = highlightCode(CODE_RAW);
 
 	// Set initial button state with SVG
 	startBtn.innerHTML = svgCamera() + " " + t("startCamera");
