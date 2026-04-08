@@ -6,16 +6,20 @@
 	"author": "Miika",
 	"license": "MIT",
 	"private": true,
+	"dependencies": {
+		"jsbarcode": "^3.12.3",
+		"qrcode": "^1.5.4"
+	},
 	"devDependencies": {
-		"@babel/core": "^7.15.8",
-		"babel-loader": "^8.2.2",
-		"@babel/preset-env": "^7.15.8",
-		"@babel/plugin-transform-runtime": "^7.15.8",
-		"css-loader": "^6.3.0",
-		"style-loader": "^3.3.0",
-		"webpack": "^5.58.1",
-		"webpack-cli": "^4.9.0",
-		"webpack-dev-server": "^4.3.1"
+		"@babel/core": "^7.29.0",
+		"babel-loader": "^10.1.1",
+		"@babel/preset-env": "^7.29.2",
+		"@babel/plugin-transform-runtime": "^7.29.0",
+		"css-loader": "^7.1.4",
+		"style-loader": "^4.0.0",
+		"webpack": "^5.106.0",
+		"webpack-cli": "^7.0.2",
+		"webpack-dev-server": "^5.2.3"
 	},
 	"scripts": {
 		"build": "webpack",
