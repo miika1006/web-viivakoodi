@@ -6,6 +6,10 @@
 	"author": "Miika",
 	"license": "MIT",
 	"private": true,
+	"dependencies": {
+		"jsbarcode": "^3.11.6",
+		"qrcode": "^1.5.4"
+	},
 	"devDependencies": {
 		"@babel/core": "^7.15.8",
 		"babel-loader": "^8.2.2",
@@ -18,7 +22,7 @@
 		"webpack-dev-server": "^4.3.1"
 	},
 	"scripts": {
-		"build": "webpack",
-		"dev": "webpack serve"
+		"build": "NODE_OPTIONS=--openssl-legacy-provider webpack",
+		"dev": "NODE_OPTIONS=--openssl-legacy-provider webpack serve"
 	}
 }

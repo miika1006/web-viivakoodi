@@ -1,11 +1,240 @@
 <!DOCTYPE html>
-<html lang="fi">
+<html lang="en">
 	<head>
 		<meta charset="utf-8" />
-		<title>Web viivakoodi</title>
-		<meta name="description" content="" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<script src="bundle.js"></script>
+		<title>Web Barcode Reader — BarcodeDetector API Demo</title>
+		<meta name="description" content="Scan barcodes instantly with your browser camera. A demo of the native BarcodeDetector Web API — no installs, no backend, no uploads. Supports QR Code, EAN-13, Code 128, Code 39 and more." />
+		<meta name="robots" content="index, follow" />
+		<link rel="canonical" href="https://web-viivakoodi.vercel.app/" />
+
+		<!-- Open Graph -->
+		<meta property="og:type" content="website" />
+		<meta property="og:url" content="https://web-viivakoodi.vercel.app/" />
+		<meta property="og:title" content="Web Barcode Reader — BarcodeDetector API Demo" />
+		<meta property="og:description" content="Scan QR codes, EAN-13, Code 128 and more directly in your browser. Uses the native BarcodeDetector API — no plugins required." />
+		<meta property="og:image" content="https://web-viivakoodi.vercel.app/og-image.png" />
+		<meta property="og:site_name" content="Web Barcode Reader" />
+		<meta property="og:locale" content="en_US" />
+
+		<!-- Twitter Card -->
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content="Web Barcode Reader — BarcodeDetector API Demo" />
+		<meta name="twitter:description" content="Scan QR codes, EAN-13, Code 128 and more directly in your browser. No installs required." />
+		<meta name="twitter:image" content="https://web-viivakoodi.vercel.app/og-image.png" />
+
+		<!-- Additional SEO -->
+		<meta name="keywords" content="barcode scanner, qr code reader, BarcodeDetector API, web barcode, browser camera, javascript barcode, ean-13, code 128" />
+		<meta name="author" content="Miika" />
+		<meta name="theme-color" content="#08080f" />
+
+		<!-- JSON-LD Structured Data -->
+		<script type="application/ld+json">
+		{
+			"@context": "https://schema.org",
+			"@type": "WebApplication",
+			"name": "Web Barcode Reader",
+			"url": "https://web-viivakoodi.vercel.app/",
+			"description": "A browser-native barcode scanner demo using the BarcodeDetector API. Supports QR Code, EAN-13, Code 128, Code 39, EAN-8 and more formats.",
+			"applicationCategory": "DeveloperApplication",
+			"operatingSystem": "Any",
+			"browserRequirements": "Requires Chrome 88+ or Edge 88+",
+			"offers": {
+				"@type": "Offer",
+				"price": "0",
+				"priceCurrency": "USD"
+			},
+			"author": {
+				"@type": "Person",
+				"name": "Miika"
+			}
+		}
+		</script>
+
+		<script defer src="bundle.js"></script>
 	</head>
-	<body></body>
+	<body>
+
+		<header class="hero">
+			<div class="hero__inner">
+				<div class="hero__badge">Native Browser API</div>
+				<h1 class="hero__title">Web Barcode <span class="gradient-text">Reader</span></h1>
+				<p class="hero__subtitle">
+					Scan barcodes with your camera using the native <code>BarcodeDetector</code> API.
+					No plugins, no uploads — runs entirely in your browser.
+				</p>
+			</div>
+		</header>
+
+		<main>
+
+			<!-- SCANNER -->
+			<section class="scanner-section" aria-label="Barcode scanner">
+				<div class="scanner-card glass-card">
+					<div class="video-wrapper" id="videoWrapper">
+						<video id="barcodecamera" autoplay muted playsinline></video>
+						<div class="scan-overlay" id="scanOverlay" aria-hidden="true">
+							<div class="scan-line"></div>
+							<div class="scan-corners">
+								<span></span><span></span><span></span><span></span>
+							</div>
+						</div>
+						<div class="status-badge" id="statusBadge">Tap Start to scan</div>
+					</div>
+					<div class="scanner-controls">
+						<button class="btn btn--primary" id="startBtn">
+							<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+							Start Camera
+						</button>
+						<div class="compat-warning" id="compatWarn" hidden>
+							<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+							BarcodeDetector API not supported in this browser. Try Chrome or Edge.
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- SAMPLE BARCODES -->
+			<section class="samples-section" aria-label="Sample barcodes to scan">
+				<div class="section-header">
+					<h2>Try scanning these</h2>
+					<p class="section-desc">Point your camera at any of these — they work with the scanner above.</p>
+				</div>
+				<div class="bento-grid">
+					<div class="sample-card glass-card">
+						<h3>QR Code</h3>
+						<p class="sample-value">https://web-viivakoodi.vercel.app/</p>
+						<div class="sample-canvas-wrap">
+							<canvas id="qr-canvas"></canvas>
+						</div>
+					</div>
+					<div class="sample-card glass-card">
+						<h3>EAN-13</h3>
+						<p class="sample-value">5901234123457</p>
+						<div class="sample-canvas-wrap">
+							<svg id="ean13-svg"></svg>
+						</div>
+					</div>
+					<div class="sample-card glass-card">
+						<h3>Code 128</h3>
+						<p class="sample-value">WEB-BARCODE-128</p>
+						<div class="sample-canvas-wrap">
+							<svg id="code128-svg"></svg>
+						</div>
+					</div>
+					<div class="sample-card glass-card">
+						<h3>Code 39</h3>
+						<p class="sample-value">CODE39</p>
+						<div class="sample-canvas-wrap">
+							<svg id="code39-svg"></svg>
+						</div>
+					</div>
+					<div class="sample-card glass-card">
+						<h3>EAN-8</h3>
+						<p class="sample-value">96385074</p>
+						<div class="sample-canvas-wrap">
+							<svg id="ean8-svg"></svg>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- CODE EXAMPLE -->
+			<section class="code-section" aria-label="Minimal code example">
+				<div class="section-header">
+					<h2>Minimal Setup</h2>
+					<p class="section-desc">Everything you need to read barcodes with a camera — under 25 lines.</p>
+				</div>
+				<div class="code-card glass-card">
+					<div class="code-card__header">
+						<span class="code-lang">HTML</span>
+						<button class="copy-btn" id="copyBtn" aria-label="Copy code to clipboard">
+							<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+							Copy
+						</button>
+					</div>
+					<pre><code id="codeExample">&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+  &lt;meta charset="utf-8" /&gt;
+  &lt;title&gt;Barcode Scanner&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;video id="v" autoplay muted playsinline style="width:100%"&gt;&lt;/video&gt;
+
+  &lt;script&gt;
+    const video = document.getElementById('v');
+
+    navigator.mediaDevices
+      .getUserMedia({ video: { facingMode: 'environment' } })
+      .then(stream =&gt; (video.srcObject = stream));
+
+    const detector = new BarcodeDetector({
+      formats: ['qr_code', 'ean_13', 'code_128']
+    });
+
+    function scan() {
+      if (video.paused) return;
+      detector.detect(video).then(codes =&gt; {
+        if (codes.length &gt; 0) {
+          alert(codes[0].format + ': ' + codes[0].rawValue);
+          video.pause();
+          setTimeout(() =&gt; video.play(), 2000);
+        }
+      });
+      requestAnimationFrame(scan);
+    }
+
+    video.addEventListener('play', () =&gt; setTimeout(scan, 500));
+  &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+				</div>
+			</section>
+
+			<!-- ABOUT -->
+			<section class="about-section" aria-label="About the BarcodeDetector API">
+				<div class="section-header">
+					<h2>About the API</h2>
+				</div>
+				<div class="about-grid">
+					<div class="about-card glass-card">
+						<div class="about-card__icon" aria-hidden="true">⚡</div>
+						<h3>Native Performance</h3>
+						<p>Runs in the browser using hardware-accelerated image processing — no JavaScript barcode libraries needed.</p>
+					</div>
+					<div class="about-card glass-card">
+						<div class="about-card__icon" aria-hidden="true">🔒</div>
+						<h3>Privacy First</h3>
+						<p>Camera frames never leave your device. All detection happens locally with zero network requests.</p>
+					</div>
+					<div class="about-card glass-card">
+						<div class="about-card__icon" aria-hidden="true">📦</div>
+						<h3>Zero Dependencies</h3>
+						<p>One native API call. No libraries, no WebAssembly bundles, no polyfills. Works in Chrome and Edge.</p>
+					</div>
+					<div class="about-card glass-card">
+						<div class="about-card__icon" aria-hidden="true">🔍</div>
+						<h3>11 Formats</h3>
+						<p>QR Code, EAN-13, EAN-8, Code 128, Code 39, Code 93, Codabar, ITF, PDF417, UPC-E, Data Matrix.</p>
+					</div>
+				</div>
+			</section>
+
+		</main>
+
+		<footer class="site-footer">
+			<p>Open source · MIT License · <a href="https://developer.mozilla.org/en-US/docs/Web/API/BarcodeDetector" target="_blank" rel="noopener noreferrer">BarcodeDetector MDN docs</a></p>
+		</footer>
+
+		<!-- SNACKBAR -->
+		<div id="snackbar" class="snackbar" role="status" aria-live="polite" hidden>
+			<div class="snackbar__content">
+				<span class="snackbar__badge" id="snackBadge"></span>
+				<span class="snackbar__value" id="snackValue"></span>
+			</div>
+			<div class="snackbar__progress" id="snackProgress"></div>
+		</div>
+
+	</body>
 </html>
