@@ -31,6 +31,9 @@
 	padding: 0;
 }
 
+/* Ensure [hidden] is never overridden by display declarations in this sheet */
+[hidden] { display: none !important; }
+
 html {
 	scroll-behavior: smooth;
 }
@@ -152,6 +155,9 @@ main {
    ============================================================ */
 .scanner-card {
 	overflow: hidden;
+	max-width: 480px;
+	margin-left: auto;
+	margin-right: auto;
 }
 
 .video-wrapper {
@@ -160,7 +166,6 @@ main {
 	border-radius: var(--radius-md) var(--radius-md) 0 0;
 	overflow: hidden;
 	aspect-ratio: 4/3;
-	max-height: 520px;
 	transition: box-shadow 0.25s ease;
 }
 
