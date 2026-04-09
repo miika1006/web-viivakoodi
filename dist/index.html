@@ -78,14 +78,29 @@
 	</head>
 	<body>
 
-		<header class="hero">
-			<div class="hero__inner">
-				<div class="hero__badge" data-i18n="heroBadge">Natiivi selain-API</div>
-				<h1 class="hero__title">
+		<header class="topbar">
+			<div class="topbar__left">
+				<button class="btn btn--ghost topbar__install" id="installBtn" type="button" hidden>
+					<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M12 3v13M6 11l6 6 6-6"/><path d="M3 20h18"/></svg>
+					<span data-i18n="installBtn">Add to Home Screen</span>
+				</button>
+			</div>
+			<div class="topbar__center">
+				<h1 class="topbar__title">
 					<span data-i18n="heroTitle">Web</span>
 					<span class="gradient-text" data-i18n="heroTitleAccent">Viivakoodinlukija</span>
 				</h1>
-				<p class="hero__subtitle"></p>
+				<p class="topbar__subtitle"></p>
+			</div>
+			<div class="topbar__right">
+				<button class="lang-toggle" id="langToggle" type="button" aria-label="Switch language">
+					<span class="lang-toggle__fi" id="langFi">FI</span>
+					<span class="lang-toggle__sep">/</span>
+					<span class="lang-toggle__en" id="langEn">EN</span>
+				</button>
+				<a class="topbar__github" href="https://github.com/miika1006/web-viivakoodi" target="_blank" rel="noopener noreferrer" aria-label="GitHub repository">
+					<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+				</a>
 			</div>
 		</header>
 
@@ -113,18 +128,6 @@
 					</div>
 				</div>
 			</section>
-
-			<!-- PWA INSTALL BANNER -->
-			<div class="install-banner glass-card" id="installBanner" hidden>
-				<div class="install-banner__icon" aria-hidden="true">
-					<img src="icons/icon-192.png" width="48" height="48" alt="" />
-				</div>
-				<div class="install-banner__text">
-					<strong data-i18n="installTitle">Lisää kotinäytölle</strong>
-					<p data-i18n="installDesc">Lisää kotinäytölle saadaksesi sovelluksen kaltaisen käyttökokemuksen.</p>
-				</div>
-				<button class="btn btn--primary install-banner__btn" id="installBtn" type="button" data-i18n="installBtn">Lisää kotinäytölle</button>
-			</div>
 
 			<!-- SAMPLE BARCODES -->
 			<section class="samples-section" aria-labelledby="samples-heading">
@@ -180,7 +183,10 @@
 				<div class="code-card glass-card">
 					<div class="code-card__header">
 						<span class="code-lang" data-i18n="codeLang">HTML</span>
-						<button class="copy-btn" id="copyBtn" type="button" aria-label="Copy code"></button>
+						<div class="code-card__actions">
+							<a href="example.html" target="_blank" rel="noopener" class="copy-btn" id="liveBtn" data-i18n="viewLiveBtn">View live</a>
+							<button class="copy-btn" id="copyBtn" type="button" aria-label="Copy code"></button>
+						</div>
 					</div>
 					<pre><code id="codeExample"></code></pre>
 				</div>
@@ -307,34 +313,6 @@
 				</div>
 			</section>
 
-			<!-- ABOUT -->
-			<section class="about-section" aria-labelledby="about-heading">
-				<div class="section-header">
-					<h2 id="about-heading" data-i18n="aboutTitle">Tietoa rajapinnasta</h2>
-				</div>
-				<div class="about-grid">
-					<div class="about-card glass-card">
-						<div class="about-card__icon" aria-hidden="true">&#9889;</div>
-						<h3 data-i18n="about1Title">Natiivi suorituskyky</h3>
-						<p data-i18n="about1Desc"></p>
-					</div>
-					<div class="about-card glass-card">
-						<div class="about-card__icon" aria-hidden="true">&#128274;</div>
-						<h3 data-i18n="about2Title">Yksityisyys ensin</h3>
-						<p data-i18n="about2Desc"></p>
-					</div>
-					<div class="about-card glass-card">
-						<div class="about-card__icon" aria-hidden="true">&#128230;</div>
-						<h3 data-i18n="about3Title">Ei riippuvuuksia</h3>
-						<p data-i18n="about3Desc"></p>
-					</div>
-					<div class="about-card glass-card">
-						<div class="about-card__icon" aria-hidden="true">&#128269;</div>
-						<h3 data-i18n="about4Title">11 formaattia</h3>
-						<p data-i18n="about4Desc"></p>
-					</div>
-				</div>
-			</section>
 
 		</main>
 

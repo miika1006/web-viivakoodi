@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Barcode Scanner – Minimal Example</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #08080f;
+      color: #f1f5f9;
+      font-family: system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      gap: 1rem;
+    }
+    h1 { font-size: 1.1rem; font-weight: 600; opacity: 0.6; letter-spacing: 0.02em; }
+    video {
+      width: 100%;
+      max-width: 480px;
+      border-radius: 12px;
+      display: block;
+      background: #000;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+    }
+    #result {
+      font-size: 1rem;
+      min-height: 1.5em;
+      color: #94a3b8;
+      text-align: center;
+    }
+    #result span {
+      background: linear-gradient(135deg, #818cf8, #22d3ee);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 700;
+    }
+    a {
+      color: #818cf8;
+      font-size: 0.82rem;
+      text-decoration: none;
+      margin-top: 0.5rem;
+      opacity: 0.7;
+    }
+    a:hover { opacity: 1; }
+  </style>
+</head>
+<body>
+  <h1>Barcode Scanner</h1>
+  <video id="v" autoplay muted playsinline></video>
+  <div id="result">Waiting for barcode&hellip;</div>
+  <a href="/">&larr; Back to full demo</a>
+
+  <script>
+    var video = document.getElementById('v');
+    var result = document.getElementById('result');
+
+    navigator.mediaDevices
+      .getUserMedia({ video: { facingMode: 'environment' } })
+      .then(function(stream) { video.srcObject = stream; });
+
+    var detector = new BarcodeDetector({
+      formats: ['qr_code', 'ean_13', 'code_128', 'ean_8', 'code_39', 'code_93']
+    });
+
+    function scan() {
+      if (video.paused) return;
+      detector.detect(video).then(function(codes) {
+        if (codes.length > 0) {
+          var fmt = codes[0].format.replace(/_/g, ' ').toUpperCase();
+          result.innerHTML = '<span>' + fmt + '</span>: ' + codes[0].rawValue;
+          video.pause();
+          setTimeout(function() { video.play(); }, 2000);
+        }
+      });
+      requestAnimationFrame(scan);
+    }
+
+    video.addEventListener('play', function() { setTimeout(scan, 500); });
+  </script>
+</body>
+</html>

@@ -23,7 +23,8 @@ Requires **Node.js 24+** (see `.nvmrc`). With nvm: `nvm use`.
 
 ```
 dist/index.html        Static HTML shell — SEO, OG tags, JSON-LD, all DOM structure
-src/index.js           App entry — camera, BarcodeDetector loop, snackbar, sample generation
+dist/example.html      Standalone minimal barcode scanner (no build required)
+src/index.js           App entry — camera, BarcodeDetector loop, snackbar, i18n, sample generation
 src/styles/main.css    All styles (injected at runtime via style-loader/css-loader)
 dist/bundle.js         Build artifact — do NOT edit directly
 ```

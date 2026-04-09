@@ -51,38 +51,44 @@ body {
 }
 
 /* ============================================================
-   Hero header
+   Topbar (compact header)
    ============================================================ */
-.hero {
-	padding: 5rem 1.5rem 3rem;
-	text-align: center;
-}
-
-.hero__inner {
-	max-width: 640px;
+.topbar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+	padding: 1rem 1.5rem 0.75rem;
+	max-width: 980px;
 	margin: 0 auto;
 }
 
-.hero__badge {
-	display: inline-block;
-	font-size: 0.7rem;
-	font-weight: 700;
-	letter-spacing: 0.1em;
-	text-transform: uppercase;
-	color: var(--accent-1);
-	border: 1px solid rgba(129, 140, 248, 0.3);
-	border-radius: 999px;
-	padding: 0.3em 0.9em;
-	margin-bottom: 1.25rem;
-	background: rgba(129, 140, 248, 0.08);
+.topbar__left,
+.topbar__right {
+	display: flex;
+	align-items: center;
+	gap: 0.6rem;
+	flex: 1;
+	min-width: 0;
 }
 
-.hero__title {
-	font-size: clamp(2rem, 6vw, 3.5rem);
+.topbar__right {
+	justify-content: flex-end;
+}
+
+.topbar__center {
+	text-align: center;
+	flex: 2;
+	min-width: 0;
+}
+
+.topbar__title {
+	font-size: clamp(1rem, 3.5vw, 1.4rem);
 	font-weight: 800;
-	letter-spacing: -0.03em;
-	line-height: 1.1;
-	margin-bottom: 1rem;
+	letter-spacing: -0.02em;
+	line-height: 1.2;
+	margin-bottom: 0.2rem;
+	white-space: nowrap;
 }
 
 .gradient-text {
@@ -92,20 +98,85 @@ body {
 	background-clip: text;
 }
 
-.hero__subtitle {
-	font-size: 1rem;
+.topbar__subtitle {
+	font-size: 0.72rem;
 	color: var(--text-2);
-	max-width: 480px;
-	margin: 0 auto;
+	line-height: 1.4;
+	margin: 0;
 }
 
-.hero__subtitle code {
+.topbar__subtitle code {
 	font-family: var(--font-mono);
 	font-size: 0.9em;
 	color: var(--accent-1);
 	background: rgba(129, 140, 248, 0.1);
-	padding: 0.1em 0.4em;
-	border-radius: 4px;
+	padding: 0.1em 0.35em;
+	border-radius: 3px;
+}
+
+/* Ghost install button */
+.btn--ghost {
+	background: transparent;
+	color: var(--text-2);
+	border: 1px solid var(--border-2);
+	font-size: 0.72rem;
+	padding: 0.38rem 0.8rem;
+}
+
+.btn--ghost:hover {
+	color: var(--text-1);
+	background: var(--surface-2);
+}
+
+.topbar__install {
+	white-space: nowrap;
+}
+
+/* Language toggle */
+.lang-toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 0;
+	font-size: 0.7rem;
+	font-weight: 700;
+	font-family: var(--font);
+	letter-spacing: 0.06em;
+	background: var(--surface);
+	border: 1px solid var(--border);
+	border-radius: 6px;
+	padding: 0.3em 0.55em;
+	cursor: pointer;
+	color: var(--text-3);
+	transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.lang-toggle:hover {
+	background: var(--surface-2);
+	border-color: var(--border-2);
+}
+
+.lang-toggle__sep {
+	margin: 0 0.2em;
+	opacity: 0.4;
+}
+
+.lang-toggle__fi.is-active,
+.lang-toggle__en.is-active {
+	color: var(--accent-1);
+}
+
+/* GitHub icon link */
+.topbar__github {
+	color: var(--text-3);
+	display: flex;
+	align-items: center;
+	text-decoration: none;
+	transition: color 0.15s ease;
+	flex-shrink: 0;
+}
+
+.topbar__github:hover {
+	color: var(--text-1);
 }
 
 /* ============================================================
@@ -412,6 +483,12 @@ main {
 	background: rgba(255, 255, 255, 0.02);
 }
 
+.code-card__actions {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
 .code-lang {
 	font-size: 0.7rem;
 	font-weight: 700;
@@ -447,6 +524,17 @@ main {
 	border-color: rgba(74, 222, 128, 0.3);
 }
 
+a.copy-btn {
+	color: var(--accent-1);
+	text-decoration: none;
+}
+
+a.copy-btn:hover {
+	color: var(--accent-2);
+	background: rgba(129, 140, 248, 0.1);
+	border-color: rgba(129, 140, 248, 0.3);
+}
+
 .code-card pre {
 	overflow-x: auto;
 	padding: 1.5rem;
@@ -473,37 +561,6 @@ main {
 .hl-number     { color: #6cb6ff; }
 .hl-comment    { color: #768390; font-style: italic; }
 
-/* ============================================================
-   About grid
-   ============================================================ */
-.about-grid {
-	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-	gap: 1rem;
-}
-
-.about-card {
-	padding: 1.5rem 1.25rem;
-	display: flex;
-	flex-direction: column;
-	gap: 0.6rem;
-}
-
-.about-card__icon {
-	font-size: 1.5rem;
-	line-height: 1;
-}
-
-.about-card h3 {
-	font-size: 0.95rem;
-	font-weight: 700;
-}
-
-.about-card p {
-	font-size: 0.85rem;
-	color: var(--text-2);
-	line-height: 1.6;
-}
 
 /* ============================================================
    Footer
@@ -715,50 +772,22 @@ main {
 	padding-top: 0.75rem;
 }
 
-/* ============================================================
-   PWA install banner
-   ============================================================ */
-.install-banner {
-	display: flex;
-	align-items: center;
-	gap: 1rem;
-	padding: 1rem 1.25rem;
-	flex-wrap: wrap;
-}
-
-.install-banner__icon img {
-	border-radius: var(--radius-sm);
-	display: block;
-}
-
-.install-banner__text {
-	flex: 1;
-	min-width: 180px;
-}
-
-.install-banner__text strong {
-	display: block;
-	font-size: 0.9rem;
-	margin-bottom: 0.15rem;
-}
-
-.install-banner__text p {
-	font-size: 0.8rem;
-	color: var(--text-2);
-}
-
-.install-banner__btn {
-	flex-shrink: 0;
-	font-size: 0.85rem;
-	padding: 0.55rem 1.2rem;
-}
 
 /* ============================================================
    Responsive
    ============================================================ */
 @media (max-width: 640px) {
-	.hero {
-		padding: 3.5rem 1rem 2rem;
+	.topbar {
+		padding: 0.75rem 1rem 0.5rem;
+		gap: 0.5rem;
+	}
+
+	.topbar__title {
+		font-size: 0.95rem;
+	}
+
+	.topbar__subtitle {
+		display: none;
 	}
 
 	.video-wrapper {
@@ -770,10 +799,6 @@ main {
 		grid-template-columns: repeat(2, 1fr);
 	}
 
-	.about-grid {
-		grid-template-columns: 1fr 1fr;
-	}
-
 	.snackbar {
 		bottom: 1rem;
 	}
@@ -781,10 +806,6 @@ main {
 
 @media (max-width: 400px) {
 	.bento-grid {
-		grid-template-columns: 1fr;
-	}
-
-	.about-grid {
 		grid-template-columns: 1fr;
 	}
 }

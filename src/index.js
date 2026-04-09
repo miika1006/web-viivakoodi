@@ -3,14 +3,17 @@ import JsBarcode from "jsbarcode";
 import QRCode from "qrcode";
 
 // ── i18n ─────────────────────────────────────────────────────
-var LANG = (navigator.language || "en").startsWith("fi") ? "fi" : "en";
+var LANG = (function() {
+	var saved = localStorage.getItem("lang");
+	if (saved === "fi" || saved === "en") return saved;
+	return (navigator.language || "en").startsWith("fi") ? "fi" : "en";
+})();
 
 var i18n = {
 	fi: {
-		heroBadge:      "Natiivi selain-API",
 		heroTitle:      "Web",
 		heroTitleAccent:"Viivakoodinlukija",
-		heroSubtitle:   "Lue viivakoodeja kameralla natiivilla <code>BarcodeDetector</code>-rajapinnalla. Ei lisäosia, ei palvelinta – toimii kokonaan selaimessa.",
+		heroSubtitle:   "Lue viivakoodeja kameralla natiivilla <code>BarcodeDetector</code>-rajapinnalla – suoraan selaimessa.",
 		startCamera:    "Käynnistä kamera",
 		stopCamera:     "Pysäytä kamera",
 		scanning:       "Skannataan\u2026",
@@ -23,15 +26,7 @@ var i18n = {
 		codeLang:       "HTML",
 		copyBtn:        "Kopioi",
 		copiedBtn:      "Kopioitu!",
-		aboutTitle:     "Tietoa rajapinnasta",
-		about1Title:    "Natiivi suorituskyky",
-		about1Desc:     "Toimii laitteistokiihdytetyllä kuvaenkäsittelyllä suoraan selaimessa – ei JavaScript-viivakoodikirjastoja tarvita.",
-		about2Title:    "Yksityisyys ensin",
-		about2Desc:     "Kamerakuvat eivät poistu laitteeltasi. Kaikki tunnistus tapahtuu paikallisesti ilman verkkoyhteyksiä.",
-		about3Title:    "Ei riippuvuuksia",
-		about3Desc:     "Yksi natiivi API-kutsu. Ei kirjastoja, ei WebAssembly-paketteja, ei polyfilleja. Toimii Chromessa ja Edgessä.",
-		about4Title:    "11 formaattia",
-		about4Desc:     "QR-koodi, EAN-13, EAN-8, Code 128, Code 39, Code 93, Codabar, ITF, PDF417, UPC-E, Data Matrix.",
+		viewLiveBtn:    "Kokeile livenä",
 		compatTitle:    "Yhteensopivuus",
 		compatDesc:     "BarcodeDetector on Chromium-pohjainen API. Tällä hetkellä tuettu:",
 		compatSupported: "Tuettu",
@@ -39,15 +34,12 @@ var i18n = {
 		compatNone:     "Ei tuettu",
 		footerText:     "Avoin lähdekoodi \u00b7 MIT \u00b7",
 		footerLink:     "BarcodeDetector MDN-dokumentaatio",
-		installTitle:   "Lisää kotinäytölle",
-		installDesc:    "Lisää kotinäytölle saadaksesi sovelluksen kaltaisen käyttökokemuksen.",
 		installBtn:     "Lisää kotinäytölle",
 	},
 	en: {
-		heroBadge:      "Native Browser API",
 		heroTitle:      "Web Barcode",
 		heroTitleAccent:"Reader",
-		heroSubtitle:   "Scan barcodes with your camera using the native <code>BarcodeDetector</code> API. No plugins, no uploads \u2014 runs entirely in your browser.",
+		heroSubtitle:   "Scan barcodes with your camera using the native <code>BarcodeDetector</code> API \u2014 runs entirely in your browser.",
 		startCamera:    "Start Camera",
 		stopCamera:     "Stop Camera",
 		scanning:       "Scanning\u2026",
@@ -60,15 +52,7 @@ var i18n = {
 		codeLang:       "HTML",
 		copyBtn:        "Copy",
 		copiedBtn:      "Copied!",
-		aboutTitle:     "About the API",
-		about1Title:    "Native Performance",
-		about1Desc:     "Runs in the browser using hardware-accelerated image processing \u2014 no JavaScript barcode libraries needed.",
-		about2Title:    "Privacy First",
-		about2Desc:     "Camera frames never leave your device. All detection happens locally with zero network requests.",
-		about3Title:    "Zero Dependencies",
-		about3Desc:     "One native API call. No libraries, no WebAssembly bundles, no polyfills. Works in Chrome and Edge.",
-		about4Title:    "11 Formats",
-		about4Desc:     "QR Code, EAN-13, EAN-8, Code 128, Code 39, Code 93, Codabar, ITF, PDF417, UPC-E, Data Matrix.",
+		viewLiveBtn:    "View live",
 		compatTitle:    "Browser Compatibility",
 		compatDesc:     "BarcodeDetector is a Chromium-based API. Currently supported in:",
 		compatSupported: "Supported",
@@ -76,8 +60,6 @@ var i18n = {
 		compatNone:     "Not supported",
 		footerText:     "Open source \u00b7 MIT \u00b7",
 		footerLink:     "BarcodeDetector MDN docs",
-		installTitle:   "Add to Home Screen",
-		installDesc:    "Add it to your home screen for an app-like experience.",
 		installBtn:     "Add to Home Screen",
 	}
 };
@@ -117,8 +99,10 @@ var snackValue   = document.getElementById("snackValue");
 var snackProgress = document.getElementById("snackProgress");
 var copyBtn      = document.getElementById("copyBtn");
 var codeExample  = document.getElementById("codeExample");
-var installBanner = document.getElementById("installBanner");
 var installBtn   = document.getElementById("installBtn");
+var langToggle   = document.getElementById("langToggle");
+var langFiEl     = document.getElementById("langFi");
+var langEnEl     = document.getElementById("langEn");
 
 // ── State ────────────────────────────────────────────────────
 var detecting = false;
@@ -141,8 +125,8 @@ function applyTranslations() {
 			el.textContent = t(key);
 		}
 	}
-	// Special: hero subtitle uses innerHTML for <code> tag
-	var subtitle = document.querySelector(".hero__subtitle");
+	// Special: topbar subtitle uses innerHTML for <code> tag
+	var subtitle = document.querySelector(".topbar__subtitle");
 	if (subtitle) subtitle.innerHTML = t("heroSubtitle");
 }
 
@@ -531,15 +515,41 @@ function svgCopy() {
 	return '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
 }
 
+// ── Language toggle ───────────────────────────────────────────
+function updateLangToggle() {
+	if (langFiEl) langFiEl.classList.toggle("is-active", LANG === "fi");
+	if (langEnEl) langEnEl.classList.toggle("is-active", LANG === "en");
+}
+
+if (langToggle) {
+	langToggle.addEventListener("click", function() {
+		LANG = (LANG === "fi") ? "en" : "fi";
+		localStorage.setItem("lang", LANG);
+		applyTranslations();
+		updateLangToggle();
+		// Refresh dynamic labels
+		if (video.srcObject) {
+			startBtn.innerHTML = svgPause() + " " + t("stopCamera");
+			setStatus(t("scanning"));
+		} else {
+			startBtn.innerHTML = svgCamera() + " " + t("startCamera");
+			setStatus(t("tapToScan"));
+		}
+		copyBtn.innerHTML = svgCopy() + " " + t("copyBtn");
+		var liveBtn = document.getElementById("liveBtn");
+		if (liveBtn) liveBtn.textContent = t("viewLiveBtn");
+	});
+}
+
 // ── PWA install prompt ────────────────────────────────────────
 window.addEventListener("beforeinstallprompt", function(e) {
 	e.preventDefault();
 	deferredInstallPrompt = e;
-	if (installBanner) installBanner.hidden = false;
+	if (installBtn) installBtn.hidden = false;
 });
 
 window.addEventListener("appinstalled", function() {
-	if (installBanner) installBanner.hidden = true;
+	if (installBtn) installBtn.hidden = true;
 	deferredInstallPrompt = null;
 });
 
@@ -549,7 +559,7 @@ if (installBtn) {
 		deferredInstallPrompt.prompt();
 		deferredInstallPrompt.userChoice.then(function() {
 			deferredInstallPrompt = null;
-			if (installBanner) installBanner.hidden = true;
+			if (installBtn) installBtn.hidden = true;
 		});
 	});
 }
@@ -583,18 +593,11 @@ function generateSamples() {
 	JsBarcode("#ean8-svg",   "96385074",      o({ format: "EAN8" }));
 }
 
-// ── Service worker registration ───────────────────────────────
-function registerSW() {
-	if ("serviceWorker" in navigator) {
-		navigator.serviceWorker.register("/sw.js").catch(function() {});
-	}
-}
-
 // ── Init ──────────────────────────────────────────────────────
 window.addEventListener("DOMContentLoaded", function() {
 	applyTranslations();
+	updateLangToggle();
 	generateSamples();
-	registerSW();
 
 	// Render syntax-highlighted code example
 	codeExample.innerHTML = highlightCode(CODE_RAW);
@@ -602,6 +605,8 @@ window.addEventListener("DOMContentLoaded", function() {
 	// Set initial button state with SVG
 	startBtn.innerHTML = svgCamera() + " " + t("startCamera");
 	copyBtn.innerHTML = svgCopy() + " " + t("copyBtn");
+	var liveBtn = document.getElementById("liveBtn");
+	if (liveBtn) liveBtn.textContent = t("viewLiveBtn");
 	setStatus(t("tapToScan"));
 
 	if (!detector) {

@@ -10,16 +10,6 @@ Selainpohjainen viivakoodinlukija, joka käyttää natiivia [`BarcodeDetector`](
 
 🌐 **Live-demo:** https://web-viivakoodi.vercel.app/
 
-### Ominaisuudet
-
-- 📷 Reaaliaikainen viivakoodin tunnistus kameralta
-- 🎯 Animoitu snackbar näyttää tunnistetun koodin tyypin ja arvon
-- 🌍 Kaksikielinen käyttöliittymä (suomi / englanti, automaattinen tunnistus)
-- 📦 Esimerkkiviivakoodeja skannattavaksi (QR, EAN-13, Code 128, Code 39, EAN-8)
-- 📋 Kopioitava minimiesimerkki omaan käyttöön
-- 📱 PWA — lisättävissä kotinäytölle
-- 🔒 Kaikki käsittely tapahtuu laitteella, ei verkkoyhteyksiä kuville
-
 ### Tuetut formaatit
 
 QR Code · EAN-13 · EAN-8 · Code 128 · Code 39 · Code 93 · Codabar · ITF · PDF417 · UPC-E · Data Matrix
@@ -45,6 +35,49 @@ QR Code · EAN-13 · EAN-8 · Code 128 · Code 39 · Code 93 · Codabar · ITF �
 - **Firefox:** Ei toteutettu. [Seurantaissue](https://bugzilla.mozilla.org/show_bug.cgi?id=1639900) on olemassa, mutta aktiivista kehitystä ei ole.
 - **Safari/WebKit:** Ei toteutettu. [WebKit-bugi](https://bugs.webkit.org/show_bug.cgi?id=206328) on auki. Kaikki iOS-selaimet käyttävät WebKitiä, joten iOS-tuki on estetty kunnes Apple toteuttaa sen.
 
+### Minimiesimerkki
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Barcode Scanner</title>
+</head>
+<body>
+  <video id="v" autoplay muted playsinline style="width:100%"></video>
+
+  <script>
+    const video = document.getElementById('v');
+
+    navigator.mediaDevices
+      .getUserMedia({ video: { facingMode: 'environment' } })
+      .then(stream => (video.srcObject = stream));
+
+    const detector = new BarcodeDetector({
+      formats: ['qr_code', 'ean_13', 'code_128']
+    });
+
+    function scan() {
+      if (video.paused) return;
+      detector.detect(video).then(codes => {
+        if (codes.length > 0) {
+          alert(codes[0].format + ': ' + codes[0].rawValue);
+          video.pause();
+          setTimeout(() => video.play(), 2000);
+        }
+      });
+      requestAnimationFrame(scan);
+    }
+
+    video.addEventListener('play', () => setTimeout(scan, 500));
+  </script>
+</body>
+</html>
+```
+
+Toimiva demo: [`dist/example.html`](dist/example.html)
+
 ### Kehitys
 
 Vaatii **Node.js 24+** (katso `.nvmrc`). nvm:llä: `nvm use`.
@@ -55,18 +88,6 @@ yarn dev         # kehityspalvelin → http://localhost:8080
 yarn build       # tuotantokooste → dist/bundle.js
 ```
 
-### Arkkitehtuuri
-
-```
-dist/index.html        Staattinen HTML (SEO, DOM-rakenne)
-src/index.js           Sovelluslogiikka (kamera, tunnistus, i18n, PWA)
-src/styles/main.css    Kaikki tyylit (injektoidaan webpack-paketissa)
-dist/bundle.js         Webpack-kooste — älä muokkaa suoraan
-dist/manifest.json     PWA-manifest
-dist/sw.js             Service worker (PWA-asennus)
-dist/icons/            Sovelluskuvakkeet (SVG + PNG)
-```
-
 ---
 
 ## English
@@ -74,16 +95,6 @@ dist/icons/            Sovelluskuvakkeet (SVG + PNG)
 A browser-based barcode reader using the native [`BarcodeDetector`](https://developer.mozilla.org/en-US/docs/Web/API/BarcodeDetector) Web API. Opens the camera and detects barcodes in real time — no plugins, no server, no uploads.
 
 🌐 **Live demo:** https://web-viivakoodi.vercel.app/
-
-### Features
-
-- 📷 Real-time barcode detection from camera
-- 🎯 Animated snackbar shows detected barcode type and value
-- 🌍 Bilingual UI (Finnish / English, auto-detected from browser language)
-- 📦 Sample barcodes to scan (QR, EAN-13, Code 128, Code 39, EAN-8)
-- 📋 Copyable minimal code example
-- 📱 PWA — can be added to home screen
-- 🔒 All processing happens on-device, no network requests for images
 
 ### Supported formats
 
@@ -110,6 +121,49 @@ The `BarcodeDetector` API is part of the [Fugu project](https://developer.chrome
 - **Firefox:** Not implemented. A [tracking issue](https://bugzilla.mozilla.org/show_bug.cgi?id=1639900) exists but no active development.
 - **Safari/WebKit:** Not implemented. A [WebKit bug](https://bugs.webkit.org/show_bug.cgi?id=206328) is open. All browsers on iOS use WebKit, so iOS support is blocked until Apple implements it.
 
+### Minimal example
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Barcode Scanner</title>
+</head>
+<body>
+  <video id="v" autoplay muted playsinline style="width:100%"></video>
+
+  <script>
+    const video = document.getElementById('v');
+
+    navigator.mediaDevices
+      .getUserMedia({ video: { facingMode: 'environment' } })
+      .then(stream => (video.srcObject = stream));
+
+    const detector = new BarcodeDetector({
+      formats: ['qr_code', 'ean_13', 'code_128']
+    });
+
+    function scan() {
+      if (video.paused) return;
+      detector.detect(video).then(codes => {
+        if (codes.length > 0) {
+          alert(codes[0].format + ': ' + codes[0].rawValue);
+          video.pause();
+          setTimeout(() => video.play(), 2000);
+        }
+      });
+      requestAnimationFrame(scan);
+    }
+
+    video.addEventListener('play', () => setTimeout(scan, 500));
+  </script>
+</body>
+</html>
+```
+
+Live demo: [`dist/example.html`](dist/example.html)
+
 ### Development
 
 Requires **Node.js 24+** (see `.nvmrc`). With nvm: `nvm use`.
@@ -120,24 +174,12 @@ yarn dev         # dev server → http://localhost:8080
 yarn build       # production bundle → dist/bundle.js
 ```
 
-### Architecture
-
-```
-dist/index.html        Static HTML shell (SEO, DOM structure)
-src/index.js           App logic (camera, detection, i18n, PWA)
-src/styles/main.css    All styles (injected via webpack bundle)
-dist/bundle.js         Webpack output — do NOT edit directly
-dist/manifest.json     PWA web app manifest
-dist/sw.js             Service worker (enables PWA install)
-dist/icons/            App icons (SVG + PNG)
-```
-
 ### Key implementation notes
 
 - `BarcodeDetector` is instantiated **once** at module level — not inside the detection loop
 - The `<video>` element requires `playsinline` for iOS Safari
 - Camera permission requires HTTPS in production (Vercel provides this automatically)
-- Language detection: `navigator.language.startsWith('fi') ? 'fi' : 'en'`
+- Language detection: `navigator.language.startsWith('fi') ? 'fi' : 'en'`, with `localStorage` override
 
 ### Deployment
 
