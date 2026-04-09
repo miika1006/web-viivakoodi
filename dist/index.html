@@ -121,7 +121,7 @@
 				</div>
 				<div class="install-banner__text">
 					<strong data-i18n="installTitle">Lisää kotinäytölle</strong>
-					<p data-i18n="installDesc">Tämä sovellus toimii myös offline-tilassa.</p>
+					<p data-i18n="installDesc">Lisää kotinäytölle saadaksesi sovelluksen kaltaisen käyttökokemuksen.</p>
 				</div>
 				<button class="btn btn--primary install-banner__btn" id="installBtn" type="button" data-i18n="installBtn">Lisää kotinäytölle</button>
 			</div>
@@ -182,42 +182,7 @@
 						<span class="code-lang" data-i18n="codeLang">HTML</span>
 						<button class="copy-btn" id="copyBtn" type="button" aria-label="Copy code"></button>
 					</div>
-					<pre><code id="codeExample">&lt;!DOCTYPE html&gt;
-&lt;html&gt;
-&lt;head&gt;
-  &lt;meta charset="utf-8" /&gt;
-  &lt;title&gt;Barcode Scanner&lt;/title&gt;
-&lt;/head&gt;
-&lt;body&gt;
-  &lt;video id="v" autoplay muted playsinline style="width:100%"&gt;&lt;/video&gt;
-
-  &lt;script&gt;
-    const video = document.getElementById('v');
-
-    navigator.mediaDevices
-      .getUserMedia({ video: { facingMode: 'environment' } })
-      .then(stream =&gt; (video.srcObject = stream));
-
-    const detector = new BarcodeDetector({
-      formats: ['qr_code', 'ean_13', 'code_128']
-    });
-
-    function scan() {
-      if (video.paused) return;
-      detector.detect(video).then(codes =&gt; {
-        if (codes.length &gt; 0) {
-          alert(codes[0].format + ': ' + codes[0].rawValue);
-          video.pause();
-          setTimeout(() =&gt; video.play(), 2000);
-        }
-      });
-      requestAnimationFrame(scan);
-    }
-
-    video.addEventListener('play', () =&gt; setTimeout(scan, 500));
-  &lt;/script&gt;
-&lt;/body&gt;
-&lt;/html&gt;</code></pre>
+					<pre><code id="codeExample"></code></pre>
 				</div>
 			</section>
 

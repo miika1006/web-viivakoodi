@@ -451,10 +451,22 @@ main {
 	font-family: var(--font-mono);
 	font-size: 0.8rem;
 	line-height: 1.75;
-	color: var(--text-1);
+	color: #adbac7;
 	white-space: pre;
 	display: block;
 }
+
+/* ── Syntax highlighting ── */
+.hl-doctype    { color: #768390; font-style: italic; }
+.hl-tag-bracket{ color: #6cb6ff; }
+.hl-tag-name   { color: #7ee787; }
+.hl-attr-name  { color: #6cb6ff; }
+.hl-attr-value { color: #96d0ff; }
+.hl-keyword    { color: #f47067; }
+.hl-builtin    { color: #dcbdfb; }
+.hl-string     { color: #96d0ff; }
+.hl-number     { color: #6cb6ff; }
+.hl-comment    { color: #768390; font-style: italic; }
 
 /* ============================================================
    About grid
