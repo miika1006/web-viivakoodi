@@ -18,12 +18,12 @@ QR Code · EAN-13 · EAN-8 · Code 128 · Code 39 · Code 93 · Codabar · ITF �
 
 | Selain / Alusta | Android | Windows | macOS | Linux | iOS / iPadOS |
 |---|:---:|:---:|:---:|:---:|:---:|
-| **Chrome 88+** | ✅ | ❌ | ✅ | ✅ | ❌ |
-| **Edge 88+** | ✅ | ✅ | ✅ | ✅ | ❌ |
+| **Chrome 88+** | ✅ | ❌ | ✅ | ✅ (ChromeOS) | ❌ |
+| **Edge 88+** | ✅ | ❌ | ✅ | — | ❌ |
 | **Opera 74+** | ✅ | ✅ | ✅ | ✅ | ❌ |
 | **Samsung Internet 13+** | ✅ | — | — | — | — |
 | **Firefox** | ❌ | ❌ | ❌ | ❌ | ❌ |
-| **Safari** | — | — | ❌ | — | ❌ |
+| **Safari 17+** | — | — | ⚠️ flag | — | ⚠️ flag |
 | **Chrome / Firefox iOS** | — | — | — | — | ❌ |
 
 > **Huom:** iOS ei tue `BarcodeDetector`-rajapintaa millään selaimella, koska kaikki iOS-selaimet käyttävät Applen WebKit-moottoria, joka ei tue tätä API:a.
@@ -104,12 +104,12 @@ QR Code · EAN-13 · EAN-8 · Code 128 · Code 39 · Code 93 · Codabar · ITF �
 
 | Browser / Platform | Android | Windows | macOS | Linux | iOS / iPadOS |
 |---|:---:|:---:|:---:|:---:|:---:|
-| **Chrome 88+** | ✅ | ❌ | ✅ | ✅ | ❌ |
-| **Edge 88+** | ✅ | ✅ | ✅ | ✅ | ❌ |
+| **Chrome 88+** | ✅ | ❌ | ✅ | ✅ (ChromeOS) | ❌ |
+| **Edge 88+** | ✅ | ❌ | ✅ | — | ❌ |
 | **Opera 74+** | ✅ | ✅ | ✅ | ✅ | ❌ |
 | **Samsung Internet 13+** | ✅ | — | — | — | — |
 | **Firefox** | ❌ | ❌ | ❌ | ❌ | ❌ |
-| **Safari** | — | — | ❌ | — | ❌ |
+| **Safari 17+** | — | — | ⚠️ flag | — | ⚠️ flag |
 | **Chrome / Firefox on iOS** | — | — | — | — | ❌ |
 
 > **Note:** iOS does not support the `BarcodeDetector` API in any browser because all iOS browsers are required to use Apple's WebKit engine, which does not implement this API.

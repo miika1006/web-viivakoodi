@@ -19,7 +19,9 @@ var i18n = {
 		scanning:       "Skannataan\u2026",
 		tapToScan:      "Käynnistä kamera skannataksesi",
 		notSupported:   "BarcodeDetector-rajapintaa ei tueta tässä selaimessa.",
-		notSupportedWin: "BarcodeDetector ei toimi Chromessa Windowsilla. Kokeile Microsoft Edgeä.",
+		compatPartialFlag: "17+ (vaatii asetus)",
+		safariDesc:     "macOS/iOS — vaatii Shape Detection -ominaisuuden käyttöönoton asetuksissa",
+		winDesc:        "Windows — ei toteutettu Chromium-moottorissa Windowsille",
 		samplesTitle:   "Kokeile skannata näitä",
 		samplesDesc:    "Osoita kamera johonkin näistä – ne toimivat yläpuolella olevan lukijan kanssa.",
 		codeTitle:      "Minimikonfiguraatio",
@@ -46,7 +48,9 @@ var i18n = {
 		scanning:       "Scanning\u2026",
 		tapToScan:      "Tap Start to scan",
 		notSupported:   "BarcodeDetector API not supported in this browser.",
-		notSupportedWin: "BarcodeDetector doesn\u2019t work in Chrome on Windows. Try Microsoft Edge instead.",
+		compatPartialFlag: "17+ (flag required)",
+		safariDesc:     "macOS/iOS \u2014 enable Shape Detection API in settings",
+		winDesc:        "Windows \u2014 not implemented in Chromium for Windows",
 		samplesTitle:   "Try scanning these",
 		samplesDesc:    "Point your camera at any of these \u2014 they work with the scanner above.",
 		codeTitle:      "Minimal Setup",
@@ -648,15 +652,6 @@ window.addEventListener("DOMContentLoaded", function() {
 	// Async detector init — the only reliable cross-platform path
 	initDetector().then(function(supported) {
 		if (!supported) {
-			// Pick the most helpful message: Windows Chrome users need Edge
-			var isWin = /Win/.test(navigator.platform || "");
-			var isChrome = /Chrome/.test(navigator.userAgent) && !/Edg/.test(navigator.userAgent);
-			var msgKey = (isWin && isChrome) ? "notSupportedWin" : "notSupported";
-			var msgEl = compatWarn.querySelector("span[data-i18n]");
-			if (msgEl) {
-				msgEl.setAttribute("data-i18n", msgKey);
-				msgEl.textContent = t(msgKey);
-			}
 			compatWarn.hidden = false;
 			startBtn.disabled = true;
 		} else {

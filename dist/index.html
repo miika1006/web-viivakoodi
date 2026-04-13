@@ -255,7 +255,7 @@
 							<strong>Chrome</strong>
 						</div>
 						<span class="compat-badge compat-badge--yes">&#10003; 88+</span>
-						<p>Android, macOS</p>
+						<p>Android, macOS, ChromeOS</p>
 					</div>
 					<div class="compat-card compat-card--yes glass-card">
 						<div class="compat-card__browser">
@@ -263,7 +263,7 @@
 							<strong>Edge</strong>
 						</div>
 						<span class="compat-badge compat-badge--yes">&#10003; 88+</span>
-						<p data-i18n="edgeDesc">Windows, macOS, Android</p>
+						<p>macOS, Android</p>
 					</div>
 					<div class="compat-card compat-card--yes glass-card">
 						<div class="compat-card__browser">
@@ -273,13 +273,13 @@
 						<span class="compat-badge compat-badge--yes">&#10003; 13+</span>
 						<p>Samsung Android</p>
 					</div>
-					<div class="compat-card compat-card--yes glass-card">
+					<div class="compat-card compat-card--partial glass-card">
 						<div class="compat-card__browser">
-							<svg class="browser-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 6v6l4 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-							<strong>Opera</strong>
+							<svg class="browser-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M9 9l6 6M15 9l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+							<strong>Safari</strong>
 						</div>
-						<span class="compat-badge compat-badge--yes">&#10003; 74+</span>
-						<p>Windows, macOS, Android</p>
+						<span class="compat-badge compat-badge--partial" data-i18n="compatPartialFlag">17+ (flag)</span>
+						<p data-i18n="safariDesc">macOS/iOS — requires enabling Shape Detection in settings</p>
 					</div>
 					<!-- Not supported -->
 					<div class="compat-card compat-card--no glass-card">
@@ -293,10 +293,10 @@
 					<div class="compat-card compat-card--no glass-card">
 						<div class="compat-card__browser">
 							<svg class="browser-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M9 9l6 6M15 9l-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-							<strong>Safari</strong>
+							<strong>Chrome / Edge Windows</strong>
 						</div>
 						<span class="compat-badge compat-badge--no" data-i18n="compatNone">Ei tuettu</span>
-						<p>macOS, iOS, iPadOS</p>
+						<p data-i18n="winDesc">Windows desktop — not implemented in Chromium for Windows</p>
 					</div>
 					<div class="compat-card compat-card--no glass-card">
 						<div class="compat-card__browser">
@@ -331,7 +331,7 @@
 							<tr>
 								<td>Windows</td>
 								<td class="td-no">&#10007;</td>
-								<td class="td-yes">&#10003;</td>
+								<td class="td-no">&#10007;</td>
 								<td class="td-no">&#10007;</td>
 								<td class="td-na">—</td>
 							</tr>
@@ -340,12 +340,19 @@
 								<td class="td-yes">&#10003;</td>
 								<td class="td-yes">&#10003;</td>
 								<td class="td-no">&#10007;</td>
-								<td class="td-no">&#10007;</td>
+								<td class="td-partial">&#9888; flag</td>
 							</tr>
 							<tr>
 								<td>Linux</td>
+								<td class="td-no">&#10007;</td>
+								<td class="td-no">&#10007;</td>
+								<td class="td-no">&#10007;</td>
+								<td class="td-na">—</td>
+							</tr>
+							<tr>
+								<td>ChromeOS</td>
 								<td class="td-yes">&#10003;</td>
-								<td class="td-yes">&#10003;</td>
+								<td class="td-na">—</td>
 								<td class="td-no">&#10007;</td>
 								<td class="td-na">—</td>
 							</tr>
@@ -354,16 +361,15 @@
 								<td class="td-no">&#10007;</td>
 								<td class="td-no">&#10007;</td>
 								<td class="td-no">&#10007;</td>
-								<td class="td-no">&#10007;</td>
+								<td class="td-partial">&#9888; flag</td>
 							</tr>
 						</tbody>
 					</table>
-					<p class="device-table__note">iOS ei tue BarcodeDetector-rajapintaa millään selaimella, koska kaikki iOS-selaimet k&#228;ytt&#228;v&#228;t Applen WebKit-moottoria.<br/>iOS does not support BarcodeDetector in any browser, as all iOS browsers use Apple's WebKit engine.</p>
+					<p class="device-table__note">Windows: BarcodeDetector ei ole toteutettu Chromium-moottorissa Windowsille. iOS: kaikki iOS-selaimet käyttävät WebKitiä. Safari 17+ tukee API:a, mutta se täytyy ottaa käyttöön asetuksista.<br/>Windows: BarcodeDetector is not implemented in Chromium for Windows. iOS: all browsers use WebKit. Safari 17+ supports the API but must be enabled in settings.</p>
 				</div>
 			</section>
 
 
-		</main>
 
 		<footer class="site-footer">
 			<p>
