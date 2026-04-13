@@ -7364,7 +7364,8 @@ var i18n = {
     stopCamera: "Pysäytä kamera",
     scanning: "Skannataan\u2026",
     tapToScan: "Käynnistä kamera skannataksesi",
-    notSupported: "BarcodeDetector-rajapintaa ei tueta tässä selaimessa. Kokeile Chromea tai Edgeä.",
+    notSupported: "BarcodeDetector-rajapintaa ei tueta tässä selaimessa.",
+    notSupportedWin: "BarcodeDetector ei toimi Chromessa Windowsilla. Kokeile Microsoft Edgeä.",
     samplesTitle: "Kokeile skannata näitä",
     samplesDesc: "Osoita kamera johonkin näistä – ne toimivat yläpuolella olevan lukijan kanssa.",
     codeTitle: "Minimikonfiguraatio",
@@ -7390,7 +7391,8 @@ var i18n = {
     stopCamera: "Stop Camera",
     scanning: "Scanning\u2026",
     tapToScan: "Tap Start to scan",
-    notSupported: "BarcodeDetector API not supported in this browser. Try Chrome or Edge.",
+    notSupported: "BarcodeDetector API not supported in this browser.",
+    notSupportedWin: "BarcodeDetector doesn\u2019t work in Chrome on Windows. Try Microsoft Edge instead.",
     samplesTitle: "Try scanning these",
     samplesDesc: "Point your camera at any of these \u2014 they work with the scanner above.",
     codeTitle: "Minimal Setup",
@@ -7430,34 +7432,53 @@ var FORMAT_LABELS = {
 };
 var detector = null;
 
-// Async init: use getSupportedFormats() to know what this platform handles,
-// then create the detector with only those formats. This is the only reliable
-// cross-platform approach (Windows/macOS desktop Chrome have a smaller format
-// set than Android and throw if given an unsupported format name).
+// Async init: use getSupportedFormats() to build the detector with only the
+// formats this platform supports. BarcodeDetector on desktop Chrome throws
+// TypeError if given any format the platform doesn't support.
 function initDetector() {
   if (!("BarcodeDetector" in window)) {
     return Promise.resolve(false);
   }
-  var formatPromise;
-  if (typeof BarcodeDetector.getSupportedFormats === "function") {
-    formatPromise = BarcodeDetector.getSupportedFormats().then(function (supported) {
-      // Intersect with our desired formats; if none match, use all supported
-      var want = FORMATS.filter(function (f) {
-        return supported.indexOf(f) !== -1;
+  if (typeof BarcodeDetector.getSupportedFormats !== "function") {
+    // Older Chrome without getSupportedFormats — try full list, then safe subset
+    try {
+      detector = new BarcodeDetector({
+        formats: FORMATS
       });
-      return want.length > 0 ? want : supported.length > 0 ? supported : null;
-    });
-  } else {
-    formatPromise = Promise.resolve(FORMATS);
+      return Promise.resolve(true);
+    } catch (e) {}
+    try {
+      detector = new BarcodeDetector({
+        formats: ["qr_code", "ean_13", "code_128"]
+      });
+      return Promise.resolve(true);
+    } catch (e) {}
+    return Promise.resolve(false);
   }
-  return formatPromise.then(function (formats) {
-    if (!formats) return false;
-    detector = new BarcodeDetector({
-      formats: formats
+  return BarcodeDetector.getSupportedFormats().then(function (supported) {
+    if (!supported || supported.length === 0) return false;
+    var want = FORMATS.filter(function (f) {
+      return supported.indexOf(f) !== -1;
     });
-    return true;
+    if (want.length === 0) want = supported;
+    try {
+      detector = new BarcodeDetector({
+        formats: want
+      });
+      return true;
+    } catch (e) {
+      return false;
+    }
   })["catch"](function () {
-    return false;
+    // getSupportedFormats rejected — try direct construction
+    try {
+      detector = new BarcodeDetector({
+        formats: FORMATS
+      });
+      return true;
+    } catch (e) {
+      return false;
+    }
   });
 }
 
@@ -7937,6 +7958,15 @@ window.addEventListener("DOMContentLoaded", function () {
   // Async detector init — the only reliable cross-platform path
   initDetector().then(function (supported) {
     if (!supported) {
+      // Pick the most helpful message: Windows Chrome users need Edge
+      var isWin = /Win/.test(navigator.platform || "");
+      var isChrome = /Chrome/.test(navigator.userAgent) && !/Edg/.test(navigator.userAgent);
+      var msgKey = isWin && isChrome ? "notSupportedWin" : "notSupported";
+      var msgEl = compatWarn.querySelector("span[data-i18n]");
+      if (msgEl) {
+        msgEl.setAttribute("data-i18n", msgKey);
+        msgEl.textContent = t(msgKey);
+      }
       compatWarn.hidden = false;
       startBtn.disabled = true;
     } else {

@@ -18,7 +18,7 @@ QR Code · EAN-13 · EAN-8 · Code 128 · Code 39 · Code 93 · Codabar · ITF �
 
 | Selain / Alusta | Android | Windows | macOS | Linux | iOS / iPadOS |
 |---|:---:|:---:|:---:|:---:|:---:|
-| **Chrome 88+** | ✅ | ✅ | ✅ | ✅ | ❌ |
+| **Chrome 88+** | ✅ | ❌ | ✅ | ✅ | ❌ |
 | **Edge 88+** | ✅ | ✅ | ✅ | ✅ | ❌ |
 | **Opera 74+** | ✅ | ✅ | ✅ | ✅ | ❌ |
 | **Samsung Internet 13+** | ✅ | — | — | — | — |
@@ -104,7 +104,7 @@ QR Code · EAN-13 · EAN-8 · Code 128 · Code 39 · Code 93 · Codabar · ITF �
 
 | Browser / Platform | Android | Windows | macOS | Linux | iOS / iPadOS |
 |---|:---:|:---:|:---:|:---:|:---:|
-| **Chrome 88+** | ✅ | ✅ | ✅ | ✅ | ❌ |
+| **Chrome 88+** | ✅ | ❌ | ✅ | ✅ | ❌ |
 | **Edge 88+** | ✅ | ✅ | ✅ | ✅ | ❌ |
 | **Opera 74+** | ✅ | ✅ | ✅ | ✅ | ❌ |
 | **Samsung Internet 13+** | ✅ | — | — | — | — |
