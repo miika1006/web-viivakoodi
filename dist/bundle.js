@@ -7429,22 +7429,36 @@ var FORMAT_LABELS = {
   data_matrix: "Data Matrix"
 };
 var detector = null;
-if ("BarcodeDetector" in window) {
-  try {
-    // Try with all desired formats first
-    detector = new BarcodeDetector({
-      formats: FORMATS
-    });
-  } catch (e) {
-    // Some platforms (e.g. Windows/macOS desktop Chrome) don't support every
-    // format in the list and throw TypeError for unsupported ones.
-    // Fall back to the platform's own default supported set.
-    try {
-      detector = new BarcodeDetector();
-    } catch (e2) {
-      detector = null;
-    }
+
+// Async init: use getSupportedFormats() to know what this platform handles,
+// then create the detector with only those formats. This is the only reliable
+// cross-platform approach (Windows/macOS desktop Chrome have a smaller format
+// set than Android and throw if given an unsupported format name).
+function initDetector() {
+  if (!("BarcodeDetector" in window)) {
+    return Promise.resolve(false);
   }
+  var formatPromise;
+  if (typeof BarcodeDetector.getSupportedFormats === "function") {
+    formatPromise = BarcodeDetector.getSupportedFormats().then(function (supported) {
+      // Intersect with our desired formats; if none match, use all supported
+      var want = FORMATS.filter(function (f) {
+        return supported.indexOf(f) !== -1;
+      });
+      return want.length > 0 ? want : supported.length > 0 ? supported : null;
+    });
+  } else {
+    formatPromise = Promise.resolve(FORMATS);
+  }
+  return formatPromise.then(function (formats) {
+    if (!formats) return false;
+    detector = new BarcodeDetector({
+      formats: formats
+    });
+    return true;
+  })["catch"](function () {
+    return false;
+  });
 }
 
 // ── DOM refs ─────────────────────────────────────────────────
@@ -7912,35 +7926,27 @@ window.addEventListener("DOMContentLoaded", function () {
   // Render syntax-highlighted code example
   codeExample.innerHTML = highlightCode(CODE_RAW);
 
-  // Set initial button state with SVG
+  // Set initial button state with SVG (button disabled until detector ready)
   startBtn.innerHTML = svgCamera() + " " + t("startCamera");
+  startBtn.disabled = true;
   copyBtn.innerHTML = svgCopy() + " " + t("copyBtn");
   var liveBtn = document.getElementById("liveBtn");
   if (liveBtn) liveBtn.textContent = t("viewLiveBtn");
   setStatus(t("tapToScan"));
-  if (!detector) {
-    compatWarn.hidden = false;
-    startBtn.disabled = true;
-  } else if (BarcodeDetector.getSupportedFormats) {
-    // Rebuild detector with only the formats this platform actually supports
-    BarcodeDetector.getSupportedFormats().then(function (supported) {
-      var filtered = FORMATS.filter(function (f) {
-        return supported.indexOf(f) !== -1;
-      });
-      if (filtered.length > 0) {
-        try {
-          detector = new BarcodeDetector({
-            formats: filtered
-          });
-        } catch (e) {/* keep existing */}
-      }
-    })["catch"](function () {/* ignore */});
-  }
 
-  // Check if URL has ?action=scan shortcut (PWA shortcut)
-  if (window.location.search.indexOf("action=scan") !== -1 && detector) {
-    startCamera();
-  }
+  // Async detector init — the only reliable cross-platform path
+  initDetector().then(function (supported) {
+    if (!supported) {
+      compatWarn.hidden = false;
+      startBtn.disabled = true;
+    } else {
+      startBtn.disabled = false;
+    }
+    // Check if URL has ?action=scan shortcut (PWA shortcut)
+    if (window.location.search.indexOf("action=scan") !== -1 && supported) {
+      startCamera();
+    }
+  });
 });
 }();
 /******/ })()
