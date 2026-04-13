@@ -7428,9 +7428,24 @@ var FORMAT_LABELS = {
   codabar: "Codabar",
   data_matrix: "Data Matrix"
 };
-var detector = "BarcodeDetector" in window ? new BarcodeDetector({
-  formats: FORMATS
-}) : null;
+var detector = null;
+if ("BarcodeDetector" in window) {
+  try {
+    // Try with all desired formats first
+    detector = new BarcodeDetector({
+      formats: FORMATS
+    });
+  } catch (e) {
+    // Some platforms (e.g. Windows/macOS desktop Chrome) don't support every
+    // format in the list and throw TypeError for unsupported ones.
+    // Fall back to the platform's own default supported set.
+    try {
+      detector = new BarcodeDetector();
+    } catch (e2) {
+      detector = null;
+    }
+  }
+}
 
 // ── DOM refs ─────────────────────────────────────────────────
 var video = document.getElementById("barcodecamera");
@@ -7897,6 +7912,20 @@ window.addEventListener("DOMContentLoaded", function () {
   if (!detector) {
     compatWarn.hidden = false;
     startBtn.disabled = true;
+  } else if (BarcodeDetector.getSupportedFormats) {
+    // Rebuild detector with only the formats this platform actually supports
+    BarcodeDetector.getSupportedFormats().then(function (supported) {
+      var filtered = FORMATS.filter(function (f) {
+        return supported.indexOf(f) !== -1;
+      });
+      if (filtered.length > 0) {
+        try {
+          detector = new BarcodeDetector({
+            formats: filtered
+          });
+        } catch (e) {/* keep existing */}
+      }
+    })["catch"](function () {/* ignore */});
   }
 
   // Check if URL has ?action=scan shortcut (PWA shortcut)
