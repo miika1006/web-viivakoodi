@@ -606,6 +606,15 @@ function generateSamples() {
 	JsBarcode("#ean8-svg",   "96385074",      o({ format: "EAN8" }));
 }
 
+// ── Unregister any old service workers ───────────────────────
+if ("serviceWorker" in navigator) {
+	navigator.serviceWorker.getRegistrations().then(function(registrations) {
+		for (var i = 0; i < registrations.length; i++) {
+			registrations[i].unregister();
+		}
+	}).catch(function() {});
+}
+
 // ── Init ──────────────────────────────────────────────────────
 window.addEventListener("DOMContentLoaded", function() {
 	applyTranslations();
